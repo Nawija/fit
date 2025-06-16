@@ -50,3 +50,49 @@ export function getRecommendedRecipes(): RecommendedRecipe[] {
 
   return recommended;
 }
+
+export type FlexCardRecipeType = {
+  title: string;
+  level: string;
+  slug: string;
+  category: string;
+  calories: string;
+  protein: string;
+  fat: string;
+  carbs: string;
+  time: string;
+  image: string;
+};
+
+export function getNonRecommendedRecipes(): FlexCardRecipeType[] {
+  const files = fs.readdirSync(recipesDir);
+
+  const nonRecommended = files
+    .map((filename) => {
+      const filePath = path.join(recipesDir, filename);
+      const fileContents = fs.readFileSync(filePath, "utf8");
+      const { data } = matter(fileContents);
+
+      if (!data.recomended) {
+        const slug = data.slug || filename.replace(/\.md$/, "");
+        return {
+          title: data.title,
+          slug,
+          level: data.level,
+          category: data.category,
+          calories: data.calories,
+          protein: data.protein,
+          fat: data.fat,
+          carbs: data.carbs,
+          time: data.time,
+          steps: data.steps,
+          image: data.image,
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean) as FlexCardRecipeType[];
+
+  return nonRecommended;
+}
