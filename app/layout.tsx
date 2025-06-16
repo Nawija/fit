@@ -1,15 +1,9 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import Footer from "@/components/navigation/Footer";
+import Header from "@/components/navigation/Header";
+import { Roboto } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Nowoczesna Strona Landing Page",
-  description: "Zbudowana z Next.js 15, TypeScript i Tailwind CSS v4",
-};
+const roboto = Roboto({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
@@ -18,9 +12,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl">
-      <body className={`${inter.className} bg-gray-50 text-gray-900`}>
+      <body
+        className={`flex min-h-screen w-full touch-auto flex-col overflow-y-auto antialiased ${roboto.className}`}
+      >
         <Header />
-        <main>{children}</main>
+        <main className="min-h-screen">{children}</main>
+        <div className="h-[200vh]" />
         <Footer />
       </body>
     </html>

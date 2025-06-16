@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "framer-motion": "^12.18.1",
+    "gray-matter": "^4.0.3",
     "lucide-react": "^0.515.0",
     "next": "15.3.3",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "prettier-plugin-tailwindcss": "^0.6.12",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
