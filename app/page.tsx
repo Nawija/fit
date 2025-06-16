@@ -6,6 +6,7 @@ import {
   getNonRecommendedRecipes,
   getRecommendedRecipes,
 } from "@/lib/searchItems";
+import { Suspense } from "react";
 
 export default function Home() {
   const recipesRecomend = getRecommendedRecipes();
@@ -24,7 +25,9 @@ export default function Home() {
         <h2 className="mx-auto mb-6 text-start text-2xl font-semibold">
           Fit przepisy
         </h2>
-        <AllRecipesPaginated recipesAll={recipesAll.slice(4)} />
+        <Suspense fallback={<div>Ładowanie przepisów...</div>}>
+          <AllRecipesPaginated recipesAll={recipesAll} />
+        </Suspense>
       </section>
     </>
   );
