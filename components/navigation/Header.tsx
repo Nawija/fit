@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Logo from "./Logo";
 import MenuBurger from "./MenuBurger";
 
@@ -99,14 +99,16 @@ export default function Nav() {
                   transition={{ duration: 0.3 }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <SearchBar />
+                  <Suspense fallback={null}>
+                    <SearchBar />
+                  </Suspense>
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
 
           <div
-            className={`mobile-menu bg-brand-main rounded-r-lg fixed top-0 left-0 z-[50] h-screen w-[280px] transform pt-12 text-white shadow-xl transition-transform duration-300 ease-in-out ${
+            className={`mobile-menu bg-brand-main fixed top-0 left-0 z-[50] h-screen w-[280px] transform rounded-r-lg pt-12 text-white shadow-xl transition-transform duration-300 ease-in-out ${
               showMenu ? "translate-x-0" : "-translate-x-full"
             }`}
           >

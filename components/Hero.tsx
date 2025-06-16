@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Suspense } from "react";
 import SearchBar from "./search/SearchBar";
 import TypingText from "./TypingText";
 
@@ -21,7 +22,9 @@ const Hero = () => {
       />
       <div className="mx-auto w-full max-w-2xl space-y-6 px-8">
         <div>
-          <SearchBar />
+          <Suspense fallback={null}>
+            <SearchBar />
+          </Suspense>
           <TypingText />
         </div>
 
