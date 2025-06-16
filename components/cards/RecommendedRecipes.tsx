@@ -38,8 +38,8 @@ export default function RecommendedRecipes({
   }
 
   return (
-    <section className="mx-auto px-4 py-12 lg:max-w-7xl lg:py-24">
-      <h2 className="mx-auto mb-6 text-start text-2xl font-semibold">
+    <section className="mx-auto py-12 lg:max-w-7xl lg:py-24">
+      <h2 className="mx-auto mb-6 px-4 text-start text-2xl font-semibold">
         Polecane przepisy
       </h2>
 
@@ -49,14 +49,14 @@ export default function RecommendedRecipes({
         onMouseMove={onMouseMove}
         onMouseUp={endDrag}
         onMouseLeave={endDrag}
-        className="hide-scrollbar flex cursor-grab snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth select-none active:cursor-grabbing lg:grid lg:grid-cols-4"
+        className="hide-scrollbar flex cursor-grab snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth select-none active:cursor-grabbing lg:grid lg:grid-cols-4 lg:px-4"
       >
         <div className="w-0 shrink-0 lg:hidden" aria-hidden />
         {recipes.map((recipe, i) => (
           <Link
             href={`/przepis/${recipe.slug}`}
             key={i}
-            className="w-80 shrink-0 snap-none lg:w-auto"
+            className="w-72 shrink-0 snap-none lg:w-auto"
           >
             <div className="overflow-hidden rounded-lg border border-gray-200">
               <Image
