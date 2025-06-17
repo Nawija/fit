@@ -73,9 +73,13 @@ export default function AddRecipePage() {
 
   useEffect(() => {
     return () => {
-      recipe.imagePreview && URL.revokeObjectURL(recipe.imagePreview);
+      if (recipe.imagePreview) {
+        URL.revokeObjectURL(recipe.imagePreview);
+      }
       recipe.steps.forEach((step) => {
-        step.imagePreview && URL.revokeObjectURL(step.imagePreview);
+        if (step.imagePreview) {
+          URL.revokeObjectURL(step.imagePreview);
+        }
       });
     };
   }, [recipe]);
