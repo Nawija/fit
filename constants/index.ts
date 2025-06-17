@@ -1,13 +1,13 @@
 export const NAVLINKS = [
   {
-    label: "Przepisy",
-    href: "/przepisy",
+    label: "Newsletter",
+    href: "/Newsletter",
   },
   {
     label: "Blog",
     href: "/blog",
   },
-    {
+  {
     label: "Współpraca",
     href: "/wspolpraca",
   },
@@ -19,5 +19,40 @@ export const NAVLINKS = [
     label: "Instagram",
     href: "/",
   },
+];
 
+export const CATEGORIES = [
+  "ciasta i torty",
+  "ciasteczka",
+  "desery",
+  "babeczki i muffiny",
+  "pączki i oponki",
+  "serniki",
+  "naleśniki i placki",
+  "chleby i bułki",
+  "dania mięsne",
+  "dania bez mięsa",
+  "dania rybne",
+  "dania na słodko",
+  "zupy",
+  "sałatki i surówki",
+  "sosy i pasty",
+  "przekąski",
+  "przetwory",
+  "napoje i koktajle",
+  "drinki i nalewki",
+  "lody domowe",
+  "porady",
+  "śniadanie",
+  "obiad",
+  "kolacja",
+  "Halloween",
+  "Sylwester",
+  "Tłusty Czwartek",
+  "Walentynki",
+  "Wielkanoc",
+  "Wigilia i Święta",
+  "bezglutenowa",
+  "wegańska",
+  "wegetariańska",
 ];

@@ -4,6 +4,7 @@ level: Łatwy
 slug: makaron-z-indykiem-i-brokuami
 recomended: true
 category: Masa
+date: "2025-05-22T21:47:45.785Z"
 calories: "420"
 protein: "40"
 fat: "18"
