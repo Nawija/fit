@@ -5,6 +5,12 @@ import path from "path";
 
 const recipesDir = path.join(process.cwd(), "content/recipes");
 
+export type RecipeSteps = {
+  title: string;
+  image: string;
+  description: string[];
+};
+
 export type Recipe = {
   title: string;
   slug: string;
@@ -16,11 +22,7 @@ export type Recipe = {
   carbs: string;
   time: string;
   image: string;
-  steps: {
-    title: string;
-    image: string;
-    description: string;
-  };
+  steps: RecipeSteps[];
   content: string;
 };
 
