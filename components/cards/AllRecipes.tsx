@@ -11,7 +11,7 @@ export default function AllRecipes({
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {recipesAll.map((recipe, i) => (
         <Link
-          href={`/przepis/${recipe.slug}`}
+          href={`/przepis/${recipe.category}/${recipe.slug}`}
           key={i}
           className="w-full"
         >

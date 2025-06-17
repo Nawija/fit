@@ -3,7 +3,7 @@ title: Pierś z kurczaka z sosem mango
 level: Łatwy
 slug: pier-z-kurczaka-z-sosem-mango
 recomended: false
-category: Kurczak
+category: ciasteczka
 date: "2025-05-22T21:47:45.785Z"
 calories: "420"
 protein: "44"

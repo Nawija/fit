@@ -1,119 +1,115 @@
 "use client";
 
+import { MainBtn } from "@/components/buttons/MainBtn";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-interface BlogMeta {
-    title: string;
-    slug: string;
-    heroSrc: string;
-    category: string;
-    date: string;
+interface RecipeMeta {
+  title: string;
+  slug: string;
+  heroSrc: string;
+  category: string;
+  date: string;
 }
 
-export default function BlogListPage() {
-    const [blogs, setBlogs] = useState<BlogMeta[]>([]);
+export default function RecipeListPage() {
+  const [recipes, setRecipes] = useState<RecipeMeta[]>([]);
 
-    useEffect(() => {
-        fetch("/api/blogs/list")
-            .then((res) => res.json())
-            .then((data) => setBlogs(data))
-            .catch(console.error);
-    }, []);
+  useEffect(() => {
+    fetch("/api/recipes/list")
+      .then((res) => res.json())
+      .then((data) => setRecipes(data))
+      .catch(console.error);
+  }, []);
 
-    const handleDelete = async (slug: string, category: string) => {
-        const confirmed = confirm("Czy na pewno chcesz usunąć tego bloga?");
-        if (!confirmed) return;
+  const handleDelete = async (slug: string, category: string) => {
+    const confirmed = confirm("Czy na pewno chcesz usunąć ten przepis?");
+    if (!confirmed) return;
 
-        try {
-            const res = await fetch("/api/blogs/delete", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ slug, category }),
-            });
+    try {
+      const res = await fetch("/api/recipes/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, category }),
+      });
 
-            if (res.ok) {
-                setBlogs((prev) => prev.filter((blog) => blog.slug !== slug));
-            } else {
-                alert("Błąd podczas usuwania bloga.");
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Wystąpił błąd.");
-        }
-    };
+      if (res.ok) {
+        setRecipes((prev) => prev.filter((recipe) => recipe.slug !== slug));
+      } else {
+        alert("Błąd podczas usuwania przepisu.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Wystąpił błąd.");
+    }
+  };
 
-    // Sort
-    const sortedBlogs = blogs.sort((a, b) => {
-        const dateA = a.date ? new Date(a.date).getTime() : 0;
-        const dateB = b.date ? new Date(b.date).getTime() : 0;
-        return dateA - dateB;
-    });
+  // Sort
+  const sortedrecipes = recipes.sort((a, b) => {
+    const dateA = a.date ? new Date(a.date).getTime() : 0;
+    const dateB = b.date ? new Date(b.date).getTime() : 0;
+    return dateA - dateB;
+  });
 
-    return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Lista blogów</h1>
-                <Link href="/adm/przepis/dodaj">
-                    <button className="p-4 bg-red-500 text-white">Dodaj blog</button>
-                </Link>
-            </div>
+  return (
+    <div className="mx-auto max-w-4xl p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Lista Przepisów</h1>
+        <Link href="/adm/przepisy/dodaj">
+          <MainBtn>Dodaj przepis</MainBtn>
+        </Link>
+      </div>
 
-            {sortedBlogs.length === 0 ? (
-                <div className="flex items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-transparent animate-spin border-t-blue-500 rounded-full " />
-                </div>
-            ) : (
-                <ul className="space-y-4 py-4">
-                    {sortedBlogs.map((blog) => (
-                        <li
-                            key={blog.slug}
-                            className="p-2 border hover:bg-gray-50 transition-colors rounded flex justify-between items-center"
-                        >
-                            <div className="flex items-center">
-                                <Image
-                                    height={150}
-                                    width={150}
-                                    src={blog.heroSrc}
-                                    alt={blog.title}
-                                />
-                                <div className="text-start ml-4">
-                                    <h2 className="text-lg font-semibold">
-                                        {blog.title}
-                                    </h2>
-                                    <p className="text-sm text-gray-600">
-                                        {blog.category} •{" "}
-                                        {blog.date.slice(0, 10)}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex space-x-4">
-                                <Link
-                                    href={`/blog/${blog.category}/${blog.slug}`}
-                                    className="text-gray-600 hover:underline"
-                                >
-                                    Podgląd
-                                </Link>
-                                <Link
-                                    href={`/adm/blog/edytuj/${blog.slug}`}
-                                    className="text-blue-600 hover:underline"
-                                >
-                                    Edytuj
-                                </Link>
-                                <button
-                                    onClick={() =>
-                                        handleDelete(blog.slug, blog.category)
-                                    }
-                                    className="text-red-600 hover:underline"
-                                >
-                                    Usuń
-                                </button>
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            )}
+      {sortedrecipes.length === 0 ? (
+        <div className="flex items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-transparent border-t-blue-500" />
         </div>
-    );
+      ) : (
+        <ul className="space-y-4 py-4">
+          {sortedrecipes.map((recipe) => (
+            <li
+              key={recipe.slug}
+              className="flex items-center justify-between rounded border border-gray-200 p-2 transition-colors hover:bg-gray-50"
+            >
+              <div className="flex items-center">
+                <Image
+                  height={150}
+                  width={150}
+                  src={recipe.heroSrc}
+                  alt={recipe.title}
+                />
+                <div className="ml-4 text-start">
+                  <h2 className="text-lg font-semibold">{recipe.title}</h2>
+                  <p className="text-sm text-gray-600">
+                    {recipe.category} • {recipe.date.slice(0, 10)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex space-x-4">
+                <Link
+                  href={`/przepis/${recipe.category}/${recipe.slug}`}
+                  className="text-gray-600 hover:underline"
+                >
+                  Podgląd
+                </Link>
+                <Link
+                  href={`/adm/przepisy/edytuj/${recipe.slug}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  Edytuj
+                </Link>
+                <button
+                  onClick={() => handleDelete(recipe.slug, recipe.category)}
+                  className="text-red-600 hover:underline"
+                >
+                  Usuń
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }

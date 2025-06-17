@@ -11,7 +11,7 @@ export default function FlexCardRecipe({
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       {recipesAll.map((recipe, index) => (
         <Link
-          href={`/przepis/${recipe.slug}`}
+          href={`/przepis/${recipe.category}/${recipe.slug}`}
           key={index}
           className="flex items-start justify-start gap-4 rounded-lg border border-gray-200 p-4 shadow-sm"
         >

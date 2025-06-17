@@ -13,14 +13,14 @@ export default function SearchParams({
   clearFilterProducts: () => void;
   closeModal: () => void;
 }) {
-  const { slug, image, title } = item;
+  const { slug, image, title, category } = item;
   return (
     <Link
       onClick={() => {
         clearFilterProducts();
         closeModal();
       }}
-      href={`/przepis/${slug}`}
+      href={`/przepis/${category}/${slug}`}
       className="bg-main/30 hover:bg-main flex w-full items-start justify-between rounded-lg border border-gray-200 p-2 backdrop-blur-lg transition-colors"
     >
       <Image

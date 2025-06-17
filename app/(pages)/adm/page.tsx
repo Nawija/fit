@@ -1,7 +1,12 @@
+import { MainBtn } from "@/components/buttons/MainBtn";
 import Link from "next/link";
 
 export default function AdminPage() {
-  return <div className="w-full h-[40vh] flex items-center justify-center">
-    <Link className="p-2 bg-red-500 text-white" href="/adm/przepis">Przepisy</Link>
-  </div>;
+  return (
+    <div className="flex h-[40vh] w-full items-center justify-center">
+      <Link href="/adm/przepisy">
+        <MainBtn>Przepisy</MainBtn>
+      </Link>
+    </div>
+  );
 }

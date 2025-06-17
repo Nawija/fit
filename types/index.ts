@@ -4,7 +4,9 @@ export type BreadcrumbTypes = {
 };
 
 export type SearchItem = {
-  slug: string;
   title: string;
   image: string;
+  slug: string;
+  category: string;
+  content: string;
 };

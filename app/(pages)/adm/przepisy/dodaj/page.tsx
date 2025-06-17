@@ -53,7 +53,7 @@ export default function AddBlogPage() {
         images.forEach((img) => formData.append("images", img));
         formData.append("heroIndex", heroIndex?.toString() ?? "");
 
-        const res = await fetch("/api/blogs", {
+        const res = await fetch("/api/recipes", {
             method: "POST",
             body: formData,
         });

@@ -54,7 +54,7 @@ export default function RecommendedRecipes({
         <div className="w-0 shrink-0 lg:hidden" aria-hidden />
         {recipes.map((recipe, i) => (
           <Link
-            href={`/przepis/${recipe.slug}`}
+            href={`/przepis/${recipe.category}/${recipe.slug}`}
             key={i}
             className="w-72 shrink-0 snap-none lg:w-auto"
           >

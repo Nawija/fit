@@ -21,14 +21,16 @@ export default function Home() {
         </h2>
         <FlexCardRecipe recipesAll={recipesAll.slice(0, 4)} />
       </section>
-      <section className="mx-auto px-4 py-12 lg:max-w-7xl lg:py-24">
-        <h2 className="mx-auto mb-6 text-start text-2xl font-semibold">
-          Fit przepisy
-        </h2>
-        <Suspense fallback={<div>Ładowanie przepisów...</div>}>
-          <AllRecipesPaginated recipesAll={recipesAll} />
-        </Suspense>
-      </section>
+      {recipesAll.length > 4 && (
+        <section className="mx-auto px-4 py-12 lg:max-w-7xl lg:py-24">
+          <h2 className="mx-auto mb-6 text-start text-2xl font-semibold">
+            Fit przepisy
+          </h2>
+          <Suspense fallback={<div>Ładowanie przepisów...</div>}>
+            <AllRecipesPaginated recipesAll={recipesAll.slice(4)} />
+          </Suspense>
+        </section>
+      )}
     </>
   );
 }
