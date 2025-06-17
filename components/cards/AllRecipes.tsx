@@ -13,7 +13,7 @@ export default function AllRecipes({
         <Link
           href={`/przepis/${recipe.slug}`}
           key={i}
-          className="w-80 shrink-0 snap-none lg:w-auto"
+          className="w-full"
         >
           <div className="overflow-hidden rounded-lg border border-gray-200">
             <Image
