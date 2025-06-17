@@ -11,9 +11,9 @@ carbs: "55"
 fiber: 0
 time: 30 minut
 image: /12210698-v-1500x1500.jpg
-description: >-
-  Makaron z indykiem i brokułami Makaron z indykiem i brokułami Makaron z
-  indykiem i brokułami
+description:
+  - Makaron z indykiem i brokułami Makaron z indykiem i brokułami Makaron z
+    indykiem i brokułami
 ingredients:
   - " pierś indyka  200 g"
   - " brokuł  200 g"
@@ -23,8 +23,7 @@ ingredients:
 steps:
   - title: Makaron ugotuj
     description:
-      - >-
-        Makaron ugotuj na sposób al dente według zaleceń producenta. Brokuły
+      - Makaron ugotuj na sposób al dente według zaleceń producenta. Brokuły
         pokrój w małe różyczki, sparz przez cztery minuty w gotującej się
         wodzie. Indyka, cebulę i suszone pomidory pokrój w paseczki , posiekaj
         czosnek. Z jajek oddziel żółtka.

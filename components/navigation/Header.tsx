@@ -70,7 +70,11 @@ export default function Nav() {
         className={`top-0 z-[9999] w-full bg-white text-black transition-all duration-300`}
       >
         <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between p-4">
-          <button onClick={() => setShowSearchModal(true)} aria-label="Szukaj">
+          <button
+            onClick={() => setShowSearchModal(true)}
+            aria-label="Szukaj"
+            className="cursor-pointer"
+          >
             <Search />
           </button>
 

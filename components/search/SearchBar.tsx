@@ -81,13 +81,13 @@ export default function SearchBar() {
 
   return (
     <div className="relative w-full" ref={inputRef}>
-      <form className="relative w-full">
+      <form className="relative w-full h-full">
         <input
           type="text"
           value={search}
           onChange={handleSearchChange}
           onFocus={modelOp}
-          placeholder="Szukaj"
+          placeholder="Szukaj przepisów"
           className="w-full rounded-md border border-gray-200 bg-white px-2 py-2 text-[16px] outline-0 placeholder:text-zinc-400 lg:flex"
         />
         {search.length > 0 ? (
@@ -109,7 +109,7 @@ export default function SearchBar() {
       </form>
       <Suspense fallback={null}>
         {isModalOpen && search.length >= 2 && (
-          <div className="absolute top-full left-1/2 z-10 mt-2 w-full -translate-x-1/2 rounded-lg border border-gray-200 bg-white p-2">
+          <div className="absolute top-full left-1/2 z-10 mt-2 w-full overflow-y-scroll h-32 -translate-x-1/2 rounded-lg border border-gray-200 bg-white p-2">
             <div className="anim-opacity w-full lg:p-3">
               {isSearching ? (
                 <SpinerLoading />

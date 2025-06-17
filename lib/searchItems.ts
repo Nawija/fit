@@ -5,6 +5,44 @@ import path from "path";
 
 const recipesDir = path.join(process.cwd(), "content/recipes");
 
+export type Recipe = {
+  title: string;
+  slug: string;
+  level: string;
+  category: string;
+  calories: string;
+  protein: string;
+  fat: string;
+  carbs: string;
+  time: string;
+  image: string;
+  steps: {
+    title: string;
+    image: string;
+    description: string;
+  };
+  content: string;
+};
+
+export async function getRecipeBySlug(slug: string): Promise<Recipe | null> {
+  const filePath = path.join(recipesDir, `${slug}.md`);
+  if (!fs.existsSync(filePath)) return null;
+
+  const fileContents = fs.readFileSync(filePath, "utf8");
+  const { data, content } = matter(fileContents);
+
+  return {
+    ...(data as Omit<Recipe, "content">),
+    content,
+  };
+}
+export function getAllRecipeSlugs(): string[] {
+  const files = fs.readdirSync(recipesDir);
+  return files
+    .filter((file) => file.endsWith(".md"))
+    .map((file) => file.replace(/\.md$/, ""));
+}
+
 export async function getAllSearchItems(): Promise<SearchItem[]> {
   const files = fs.readdirSync(recipesDir);
   const items = files.map((filename) => {
