@@ -149,7 +149,11 @@ export default function AddRecipePage() {
       steps: prev.steps.filter((step) => step.id !== id),
     }));
   };
-  const updateStep = (id: string, field: keyof Step, value: any) => {
+  const updateStep = <K extends keyof Step>(
+    id: string,
+    field: K,
+    value: Step[K],
+  ) => {
     setRecipe((prev) => ({
       ...prev,
       steps: prev.steps.map((step) =>
@@ -193,29 +197,6 @@ export default function AddRecipePage() {
         formData.append("images", step.image, stepImageName);
       }
     });
-
-    // Zaktualizowana logika wysyłania danych, zgodna z poprzednią poprawką backendu
-    const dataToSend = {
-      ...recipe,
-      image: recipe.image ? `hero_${recipe.slug}_${recipe.image.name}` : null,
-      steps: recipe.steps.map((step, index) => ({
-        title: step.title,
-        description: step.description[0]
-          .split("\n")
-          .filter((line) => line.trim() !== ""),
-        image: step.image
-          ? `step_${index}_${recipe.slug}_${step.image.name}`
-          : null,
-      })),
-      ingredients: recipe.ingredients
-        .map((ing) => ing.value)
-        .filter((val) => val.trim() !== ""),
-    };
-
-    // Klucz `image.name` w backendzie pochodzi z nazwy pliku w formData.append.
-    // Klucz w danych JSON musi być identyczny. Poprawiłem logikę powyżej, aby to zapewnić.
-    // Twój backend z `path.basename` jest OK, ale to podejście jest bardziej jawne.
-    // Wybierz jedno - to albo to z `path.basename` na backendzie. Poniżej wersja pod `path.basename`.
 
     const dataForPathBasenameBackend = {
       ...recipe,
@@ -264,7 +245,7 @@ export default function AddRecipePage() {
       <form onSubmit={handleSave}>
         {/* === PRZYKLEJONY NAGŁÓWEK === */}
         <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/70 px-4 py-3 backdrop-blur-lg sm:px-6 lg:px-8 dark:border-zinc-800 dark:bg-zinc-900/70">
-          <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <div className="mx-auto flex max-w-6xl items-center justify-between">
             <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
               {recipe.title || "Nowy przepis"}
             </h1>
