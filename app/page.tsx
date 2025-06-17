@@ -12,7 +12,7 @@ export default function Home() {
   const recipesRecomend = getRecommendedRecipes();
   const recipesAll = getNonRecommendedRecipes();
   return (
-    <>
+    <div className="anim-opacity">
       <Hero />
       <RecommendedRecipes recipes={recipesRecomend.slice(0, 8)} />
       <section className="mx-auto max-w-7xl px-4">
@@ -31,6 +31,6 @@ export default function Home() {
           </Suspense>
         </section>
       )}
-    </>
+    </div>
   );
 }

@@ -20,6 +20,8 @@ export type Recipe = {
   protein: string;
   fat: string;
   date: string;
+  description: string;
+  ingredients: string[];
   carbs: string;
   time: string;
   image: string;
@@ -67,6 +69,8 @@ export async function getRecipeBySlugAndCategory(
     steps: data.steps,
     category,
     date: data.date || "",
+    description: data.description,
+    ingredients: data.ingredients,
     image: data.image || [],
     content,
   };

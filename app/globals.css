@@ -7,3 +7,15 @@
 @theme {
   --color-brand-main: #7e6925;
 }
+
+.anim-opacity {
+  animation: anim-opacity 0.5s both 0.1s;
+}
+@keyframes anim-opacity {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

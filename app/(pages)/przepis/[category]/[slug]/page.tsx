@@ -1,85 +1,257 @@
+// /app/przepis/[category]/[slug]/page.tsx
+
 import { getRecipeBySlugAndCategory, RecipeSteps } from "@/lib/searchItems";
+import {
+  BarChart3,
+  ChefHat,
+  ChevronRight,
+  Clock,
+  Flame,
+  Info,
+  Leaf,
+  Plus,
+  Soup,
+} from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+
+// Można ustawić, aby strony były generowane statycznie podczas budowania aplikacji
 export const dynamic = "force-static";
 
-function capitalizeWithSpaces(str: string): string {
-  const withSpaces = str.replace(/-/g, " ");
-  return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1).toLowerCase();
+// Lepsza funkcja do formatowania, obsługuje wieloczłonowe nazwy
+function formatCategory(str: string): string {
+  return str
+    .replace(/-/g, " ")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 }
 
 export default async function RecipeCategorySlugPage({
   params,
 }: {
-  params: Promise<{ category: string; slug: string }>;
+  params: { category: string; slug: string };
 }) {
-  const awaitedParams = await Promise.resolve(params);
-  const { category, slug } = awaitedParams;
-
+  const { category, slug } = params;
   const recipe = await getRecipeBySlugAndCategory(category, slug);
 
-  if (!recipe) return notFound();
+  if (!recipe) {
+    return notFound();
+  }
 
+  // Założenie: przepis ma pole `description` oraz `ingredients`
+  // Jeśli ich nie ma, odpowiednie sekcje po prostu się nie wyświetlą
+  const {
+    title,
+    image,
+    level,
+    time,
+    calories,
+    protein,
+    fat,
+    carbs,
+    description,
+    ingredients,
+    steps,
+  } = recipe;
 
   return (
-    <>
-      <div className="mx-auto max-w-3xl p-6">
-        <h1 className="mb-4 text-3xl font-bold">{recipe.title}</h1>
-        <Image
-          src={recipe.image}
-          alt={recipe.title}
-          width={800}
-          height={400}
-          className="mb-4 rounded-lg"
-        />
-        <div className="mb-6 space-y-2 text-gray-700">
-          <p>
-            <strong>Poziom:</strong> {recipe.level}
-          </p>
-          <p>
-            <strong>Kategoria:</strong> {recipe.category}
-          </p>
-          <p>
-            <strong>Czas:</strong> {recipe.time}
-          </p>
-          <p>
-            <strong>Kalorie:</strong> {recipe.calories}
-          </p>
-          <p>
-            <strong>Białko:</strong> {recipe.protein}
-          </p>
-          <p>
-            <strong>Tłuszcze:</strong> {recipe.fat}
-          </p>
-          <p>
-            <strong>Węglowodany:</strong> {recipe.carbs}
-          </p>
-        </div>
-        <div>
-          <h2 className="mb-2 text-2xl font-semibold">Kroki</h2>
-          <ol className="list-inside list-decimal space-y-4">
-            {recipe.steps?.map((step: RecipeSteps, idx) => (
-              <li key={idx}>
-                <h3 className="text-lg font-semibold">{step.title}</h3>
-                <div className="mt-2">
-                  <Image
-                    src={step.image}
-                    alt={step.title}
-                    width={600}
-                    height={300}
-                    className="rounded-lg"
-                  />
-                </div>
-                <ul className="ml-4 list-inside list-disc text-gray-700">
-                  {step.description.map((desc: string, i: number) => (
-                    <li key={i}>{desc}</li>
+    <div className="anim-opacity bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200">
+      <article>
+        {/* === SEKCJA HERO === */}
+        <header className="relative h-[60vh] w-full">
+          {/* Obraz w tle */}
+          <Image
+            src={image}
+            alt={title}
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Gradient dla czytelności tekstu */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+
+          <div className="relative container mx-auto flex h-full flex-col justify-end p-4 pb-12 text-white md:p-8 md:pb-16">
+            {/* Breadcrumbs (nawigacja) */}
+            <div className="mb-4 flex items-center text-sm text-slate-200">
+              <Link href="/" className="hover:text-white">
+                Strona główna
+              </Link>
+              <ChevronRight size={16} className="mx-1" />
+              <Link href="/przepisy" className="hover:text-white">
+                Przepisy
+              </Link>
+              <ChevronRight size={16} className="mx-1" />
+              <Link
+                href={`/przepisy/${category}`}
+                className="font-semibold text-white"
+              >
+                {formatCategory(category)}
+              </Link>
+            </div>
+
+            <h1 className="text-4xl leading-tight font-extrabold tracking-tight text-balance md:text-6xl">
+              {title}
+            </h1>
+
+            {/* Kluczowe informacje */}
+            <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-lg">
+              <div className="flex items-center gap-2">
+                <Clock size={20} />
+                <span>{time}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ChefHat size={20} />
+                <span>{level}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Flame size={20} />
+                <span>{calories} kcal</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* === GŁÓWNA TREŚĆ (2 KOLUMNY) === */}
+        <div className="relative z-20 container mx-auto -mt-16 grid grid-cols-1 gap-8 px-4 py-8 lg:grid-cols-3 lg:gap-12">
+          {/* LEWA KOLUMNA: OPIS I KROKI */}
+          <div className="order-1 lg:order-first lg:col-span-2">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-lg md:p-8 dark:border-slate-800 dark:bg-slate-900">
+              {/* Krótki opis przepisu */}
+              {description && (
+                <>
+                  <h1 className="mb-4 text-2xl leading-tight font-bold tracking-tight text-balance md:text-3xl">
+                    {title}
+                  </h1>
+                  <div className="prose prose-lg dark:prose-invert max-w-none text-slate-600 dark:text-slate-400">
+                    <p>{description}</p>
+                  </div>
+                </>
+              )}
+
+              {/* Kroki przygotowania */}
+              <div className={description ? "mt-12" : ""}>
+                <h2 className="mb-8 flex items-center gap-3 text-3xl font-bold">
+                  <Soup size={32} className="text-indigo-500" />
+                  Przygotowanie
+                </h2>
+                <div className="space-y-10">
+                  {steps?.map((step: RecipeSteps, idx) => (
+                    <div key={idx} className="flex gap-4 md:gap-6">
+                      <div className="flex-shrink-0 text-3xl font-bold text-slate-300 md:text-4xl dark:text-slate-600">
+                        {idx + 1}.
+                      </div>
+                      <div className="flex-grow">
+                        {step.title && (
+                          <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
+                            {step.title}
+                          </h3>
+                        )}
+                        <ul className="mt-2 space-y-2 text-slate-600 dark:text-slate-400">
+                          {step.description.map((desc: string, i: number) => (
+                            <li key={i} className="flex items-start gap-3">
+                              <Plus
+                                size={16}
+                                className="mt-1.5 flex-shrink-0 text-indigo-500"
+                              />
+                              <span>{desc}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        {step.image && (
+                          <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-lg border border-gray-200">
+                            <Image
+                              src={step.image}
+                              alt={step.title || `Krok ${idx + 1}`}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 768px) 100vw, 66vw"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* PRAWA KOLUMNA: SKŁADNIKI I DANE */}
+          <aside className="lg:col-span-1">
+            <div className="sticky top-24 space-y-8">
+              {/* Karta Składników */}
+              {ingredients && ingredients.length > 0 && (
+                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                  <h3 className="mb-4 flex items-center gap-3 text-2xl font-bold">
+                    <Leaf size={24} className="text-green-500" />
+                    Składniki
+                  </h3>
+                  <ul className="space-y-3">
+                    {ingredients.map((ing: string, i: number) => (
+                      <li
+                        key={i}
+                        className="flex items-center gap-3 rounded-md p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      >
+                        <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                        <span className="text-slate-700 dark:text-slate-300">
+                          {ing}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Karta Danych */}
+              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                <h3 className="mb-4 flex items-center gap-3 text-2xl font-bold">
+                  <Info size={24} className="text-blue-500" />
+                  Szczegóły
+                </h3>
+                <ul className="space-y-3 text-slate-700 dark:text-slate-300">
+                  <li className="flex justify-between">
+                    <span>
+                      <strong>Poziom:</strong>
+                    </span>{" "}
+                    <span>{level}</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>
+                      <strong>Czas:</strong>
+                    </span>{" "}
+                    <span>{time}</span>
+                  </li>
                 </ul>
-              </li>
-            ))}
-          </ol>
+                <hr className="my-4 border-slate-200 dark:border-slate-700" />
+                <h4 className="mb-2 flex items-center gap-2 text-lg font-semibold">
+                  <BarChart3 size={20} className="text-slate-500" />
+                  Wartości odżywcze
+                </h4>
+                <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                  <li className="flex justify-between">
+                    <span>Kalorie:</span>{" "}
+                    <span className="font-medium">{calories} kcal</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>Białko:</span>{" "}
+                    <span className="font-medium">{protein} g</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>Tłuszcze:</span>{" "}
+                    <span className="font-medium">{fat} g</span>
+                  </li>
+                  <li className="flex justify-between">
+                    <span>Węglowodany:</span>{" "}
+                    <span className="font-medium">{carbs} g</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </aside>
         </div>
-      </div>
-    </>
+      </article>
+    </div>
   );
 }

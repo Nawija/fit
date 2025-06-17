@@ -1,10 +1,19 @@
-// /app/admin/add-recipe/page.tsx (lub gdziekolwiek znajduje się Twój plik)
+// /app/admin/add-recipe/page.tsx
+
 "use client";
 
 import { CATEGORIES } from "@/constants";
-import { RecipeFormData, Step } from "@/types/recipe"; // Zaimportuj typy
+import { RecipeFormData, Step } from "@/types/recipe";
 import { AnimatePresence, motion } from "framer-motion";
-import { ImageUp, Plus, Sparkles, Trash2 } from "lucide-react";
+import {
+  ImageUp,
+  LoaderCircle,
+  Plus,
+  Save,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import slugify from "slugify";
@@ -29,12 +38,28 @@ const initialRecipeState: RecipeFormData = {
   ],
 };
 
+// --- Stylowanie dla spójności ---
+const inputClasses =
+  "w-full rounded-md border-zinc-300 bg-white/50 text-zinc-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-100 dark:focus:border-indigo-600 dark:focus:ring-indigo-600";
+const cardClasses =
+  "rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-800/50";
+const cardHeaderClasses =
+  "mb-4 border-b border-zinc-200 pb-3 text-lg font-semibold text-zinc-800 dark:border-zinc-700 dark:text-zinc-200";
+const buttonClasses = {
+  primary:
+    "inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-zinc-900",
+  secondary:
+    "inline-flex items-center justify-center gap-2 rounded-md bg-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600 dark:focus:ring-zinc-500 dark:focus:ring-offset-zinc-900",
+  danger:
+    "rounded-full p-2 text-zinc-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-500",
+};
+
 export default function AddRecipePage() {
   const router = useRouter();
   const [recipe, setRecipe] = useState<RecipeFormData>(initialRecipeState);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Efekt do automatycznego generowania sluga
+  // --- LOGIKA KOMPONENTU (BEZ ZMIAN) ---
   useEffect(() => {
     if (recipe.title) {
       const newSlug = slugify(recipe.title, {
@@ -46,7 +71,6 @@ export default function AddRecipePage() {
     }
   }, [recipe.title]);
 
-  // Efekt do czyszczenia URLi podglądu obrazków, aby uniknąć wycieków pamięci
   useEffect(() => {
     return () => {
       recipe.imagePreview && URL.revokeObjectURL(recipe.imagePreview);
@@ -56,7 +80,6 @@ export default function AddRecipePage() {
     };
   }, [recipe]);
 
-  // --- OGÓLNE HANDLERY ---
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -82,7 +105,11 @@ export default function AddRecipePage() {
     }
   };
 
-  // --- HANDLERY SKŁADNIKÓW ---
+  const removeHeroImage = () => {
+    if (recipe.imagePreview) URL.revokeObjectURL(recipe.imagePreview);
+    setRecipe((prev) => ({ ...prev, image: null, imagePreview: undefined }));
+  };
+
   const addIngredient = () => {
     setRecipe((prev) => ({
       ...prev,
@@ -107,7 +134,6 @@ export default function AddRecipePage() {
     }));
   };
 
-  // --- HANDLERY KROKÓW ---
   const addStep = () => {
     setRecipe((prev) => ({
       ...prev,
@@ -147,7 +173,6 @@ export default function AddRecipePage() {
     }
   };
 
-  // --- ZAPIS ---
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!recipe.category || !recipe.title) {
@@ -158,47 +183,64 @@ export default function AddRecipePage() {
 
     const formData = new FormData();
 
-    // Dołącz pliki i zbuduj mapę ścieżek
-    const imagePaths: { hero?: string; steps: Record<string, string> } = {
-      steps: {},
-    };
     if (recipe.image) {
       const heroImageName = `hero_${recipe.slug}_${recipe.image.name}`;
       formData.append("images", recipe.image, heroImageName);
-      imagePaths.hero = `/images/recipes/${recipe.category}/${recipe.slug}/${heroImageName}`;
     }
     recipe.steps.forEach((step, index) => {
       if (step.image) {
         const stepImageName = `step_${index}_${recipe.slug}_${step.image.name}`;
         formData.append("images", step.image, stepImageName);
-        imagePaths.steps[step.id] =
-          `/images/recipes/${recipe.category}/${recipe.slug}/${stepImageName}`;
       }
     });
 
-    // Przygotuj obiekt danych do wysłania jako JSON
+    // Zaktualizowana logika wysyłania danych, zgodna z poprzednią poprawką backendu
     const dataToSend = {
       ...recipe,
-      image: imagePaths.hero || null,
-      steps: recipe.steps.map((step) => ({
+      image: recipe.image ? `hero_${recipe.slug}_${recipe.image.name}` : null,
+      steps: recipe.steps.map((step, index) => ({
         title: step.title,
         description: step.description[0]
           .split("\n")
-          .filter((line) => line.trim() !== ""), // Z textarea do tablicy
-        image: imagePaths.steps[step.id] || null,
+          .filter((line) => line.trim() !== ""),
+        image: step.image
+          ? `step_${index}_${recipe.slug}_${step.image.name}`
+          : null,
       })),
       ingredients: recipe.ingredients
         .map((ing) => ing.value)
-        .filter((val) => val.trim() !== ""), // Tylko wartości
+        .filter((val) => val.trim() !== ""),
     };
 
-    formData.append("data", JSON.stringify(dataToSend));
+    // Klucz `image.name` w backendzie pochodzi z nazwy pliku w formData.append.
+    // Klucz w danych JSON musi być identyczny. Poprawiłem logikę powyżej, aby to zapewnić.
+    // Twój backend z `path.basename` jest OK, ale to podejście jest bardziej jawne.
+    // Wybierz jedno - to albo to z `path.basename` na backendzie. Poniżej wersja pod `path.basename`.
 
-    // Potrzebujesz tego w API, aby wiedzieć gdzie zapisać zdjęcia
+    const dataForPathBasenameBackend = {
+      ...recipe,
+      image: recipe.image
+        ? `/fake/path/${`hero_${recipe.slug}_${recipe.image.name}`}`
+        : null,
+      steps: recipe.steps.map((step, index) => ({
+        title: step.title,
+        description: step.description[0]
+          .split("\n")
+          .filter((line) => line.trim() !== ""),
+        image: step.image
+          ? `/fake/path/${`step_${index}_${recipe.slug}_${step.image.name}`}`
+          : null,
+      })),
+      ingredients: recipe.ingredients
+        .map((ing) => ing.value)
+        .filter((val) => val.trim() !== ""),
+    };
+    // Używamy wersji z `path.basename`, bo to ostatnio zaimplementowaliśmy w backendzie.
+    formData.append("data", JSON.stringify(dataForPathBasenameBackend));
+
     formData.append("slug", recipe.slug);
     formData.append("category", recipe.category);
 
-    // Wysyłka do API
     const res = await fetch("/api/recipes", {
       method: "POST",
       body: formData,
@@ -207,7 +249,7 @@ export default function AddRecipePage() {
     if (res.ok) {
       alert("Zapisano przepis!");
       setRecipe(initialRecipeState);
-      router.push("/adm/przepisy"); // lub gdziekolwiek chcesz
+      router.push("/adm/przepisy");
     } else {
       const error = await res.json();
       alert(`Błąd zapisu: ${error.message}`);
@@ -216,295 +258,369 @@ export default function AddRecipePage() {
     setIsSaving(false);
   };
 
+  // --- NOWY DESIGN KOMPONENTU (JSX) ---
   return (
-    <form
-      onSubmit={handleSave}
-      className="mx-auto max-w-5xl space-y-8 divide-y divide-gray-200 p-4 sm:p-6 lg:p-8"
-    >
-      {/* --- SEKCJA GŁÓWNA --- */}
-      <div>
-        <h1 className="mb-2 text-3xl font-bold">Dodaj nowy przepis</h1>
-        <p className="mb-6 text-gray-500">
-          Wypełnij poniższe pola, aby stworzyć plik `.md` z przepisem.
-        </p>
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+      <form onSubmit={handleSave}>
+        {/* === PRZYKLEJONY NAGŁÓWEK === */}
+        <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/70 px-4 py-3 backdrop-blur-lg sm:px-6 lg:px-8 dark:border-zinc-800 dark:bg-zinc-900/70">
+          <div className="flex items-center justify-between max-w-6xl mx-auto">
+            <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+              {recipe.title || "Nowy przepis"}
+            </h1>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className={buttonClasses.primary}
+            >
+              {isSaving ? (
+                <LoaderCircle className="h-5 w-5 animate-spin" />
+              ) : (
+                <Save className="h-5 w-5" />
+              )}
+              <span>{isSaving ? "Zapisywanie..." : "Zapisz przepis"}</span>
+            </button>
+          </div>
+        </header>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <input
-            type="text"
-            name="title"
-            placeholder="Tytuł przepisu"
-            value={recipe.title}
-            onChange={handleInputChange}
-            className="w-full rounded-md border p-3 md:col-span-2"
-            required
-          />
-          <p className="-mt-4 text-sm text-gray-500 md:col-span-2">
-            Slug: {recipe.slug}
-          </p>
-
-          <select
-            name="category"
-            value={recipe.category}
-            onChange={handleInputChange}
-            className="w-full rounded-md border p-3"
-            required
-          >
-            <option value="">Wybierz kategorię...</option>
-            {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-          <select
-            name="level"
-            value={recipe.level}
-            onChange={handleInputChange}
-            className="w-full rounded-md border p-3"
-          >
-            <option value="Łatwy">Łatwy</option>
-            <option value="Średni">Średni</option>
-            <option value="Trudny">Trudny</option>
-          </select>
-        </div>
-        <textarea
-          name="description"
-          value={recipe.description}
-          onChange={handleInputChange}
-          placeholder="Krótki opis przepisu (widoczny na kartach)"
-          className="mt-6 w-full rounded-md border p-3"
-          rows={3}
-        />
-      </div>
-
-      {/* --- SEKCJA METADANYCH --- */}
-      <div className="pt-8">
-        <h2 className="mb-4 text-xl font-semibold">
-          Metadane i Makroskładniki
-        </h2>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <input
-            type="text"
-            name="time"
-            value={recipe.time}
-            onChange={handleInputChange}
-            placeholder="Czas (np. 30 minut)"
-            className="rounded-md border p-2"
-          />
-          <input
-            type="number"
-            name="calories"
-            value={recipe.calories}
-            onChange={handleInputChange}
-            placeholder="Kalorie"
-            className="rounded-md border p-2"
-          />
-          <input
-            type="number"
-            name="protein"
-            value={recipe.protein}
-            onChange={handleInputChange}
-            placeholder="Białko (g)"
-            className="rounded-md border p-2"
-          />
-          <input
-            type="number"
-            name="fat"
-            value={recipe.fat}
-            onChange={handleInputChange}
-            placeholder="Tłuszcz (g)"
-            className="rounded-md border p-2"
-          />
-          <input
-            type="number"
-            name="carbs"
-            value={recipe.carbs}
-            onChange={handleInputChange}
-            placeholder="Węgle (g)"
-            className="rounded-md border p-2"
-          />
-          <input
-            type="number"
-            name="fiber"
-            value={recipe.fiber}
-            onChange={handleInputChange}
-            placeholder="Błonnik (g)"
-            className="rounded-md border p-2"
-          />
-        </div>
-        <div className="mt-4 flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="recomended"
-            id="recomended"
-            checked={recipe.recomended}
-            onChange={handleCheckboxChange}
-            className="h-4 w-4 rounded"
-          />
-          <label htmlFor="recomended" className="font-medium">
-            Polecany przepis{" "}
-            <Sparkles className="inline-block h-4 w-4 text-yellow-500" />
-          </label>
-        </div>
-      </div>
-
-      {/* --- ZDJĘCIE GŁÓWNE --- */}
-      <div className="pt-8">
-        <h2 className="mb-4 text-xl font-semibold">Zdjęcie główne (Hero)</h2>
-        <div className="flex items-center gap-4">
-          <label
-            htmlFor="hero-image-upload"
-            className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 bg-white p-3 hover:bg-gray-50"
-          >
-            <ImageUp size={20} />{" "}
-            <span>{recipe.image ? "Zmień zdjęcie" : "Wybierz zdjęcie"}</span>
-          </label>
-          <input
-            type="file"
-            id="hero-image-upload"
-            accept="image/*"
-            onChange={handleHeroImageChange}
-            className="hidden"
-          />
-          {recipe.imagePreview && (
-            <img
-              src={recipe.imagePreview}
-              alt="Podgląd"
-              className="h-24 w-24 rounded-md border object-cover"
-            />
-          )}
-        </div>
-      </div>
-
-      {/* --- SKŁADNIKI --- */}
-      <div className="pt-8">
-        <h2 className="mb-4 text-xl font-semibold">Składniki</h2>
-        <div className="space-y-3">
-          <AnimatePresence>
-            {recipe.ingredients.map((ing, index) => (
-              <motion.div
-                key={ing.id}
-                layout
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2"
-              >
-                <input
-                  type="text"
-                  placeholder={`Składnik ${index + 1}`}
-                  value={ing.value}
-                  onChange={(e) => updateIngredient(ing.id, e.target.value)}
-                  className="w-full rounded-md border p-2"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeIngredient(ing.id)}
-                  className="rounded-full p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-        <button
-          type="button"
-          onClick={addIngredient}
-          className="mt-4 flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800"
-        >
-          <Plus size={18} />
-          Dodaj składnik
-        </button>
-      </div>
-
-      {/* --- KROKI --- */}
-      <div className="pt-8">
-        <h2 className="mb-4 text-xl font-semibold">Kroki przygotowania</h2>
-        <div className="space-y-6">
-          <AnimatePresence>
-            {recipe.steps.map((step, index) => (
-              <motion.div
-                key={step.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="relative space-y-3 rounded-lg border bg-gray-50/50 p-4"
-              >
-                <button
-                  type="button"
-                  onClick={() => removeStep(step.id)}
-                  className="absolute -top-3 -right-3 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
-                >
-                  <Trash2 size={16} />
-                </button>
-                <h3 className="font-semibold">Krok {index + 1}</h3>
-                <input
-                  type="text"
-                  placeholder="Tytuł kroku (opcjonalny)"
-                  value={step.title}
-                  onChange={(e) => updateStep(step.id, "title", e.target.value)}
-                  className="w-full rounded-md border p-2"
-                />
-                <textarea
-                  placeholder="Opis kroku... Każda nowa linia będzie osobnym punktem w opisie."
-                  value={step.description}
-                  onChange={(e) =>
-                    updateStep(step.id, "description", [e.target.value])
-                  }
-                  className="w-full rounded-md border p-2"
-                  rows={4}
-                />
-                <div className="flex items-center gap-4">
-                  <label
-                    htmlFor={`step-image-${step.id}`}
-                    className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 bg-white p-2 text-sm hover:bg-gray-50"
-                  >
-                    <ImageUp size={16} />{" "}
-                    <span>
-                      {step.image ? "Zmień zdjęcie" : "Dodaj zdjęcie do kroku"}
-                    </span>
-                  </label>
+        {/* === GŁÓWNY UKŁAD === */}
+        <main className="mx-auto grid max-w-7xl grid-cols-1 gap-8 p-4 sm:p-6 lg:grid-cols-3 lg:p-8">
+          {/* === LEWA KOLUMNA (GŁÓWNA TREŚĆ) === */}
+          <div className="space-y-8 lg:col-span-2">
+            {/* --- Podstawowe informacje --- */}
+            <section className={cardClasses}>
+              <div className="p-5">
+                <h2 className={cardHeaderClasses}>Podstawowe informacje</h2>
+                <div className="space-y-4">
                   <input
-                    type="file"
-                    id={`step-image-${step.id}`}
-                    accept="image/*"
-                    onChange={(e) => handleStepImageChange(step.id, e)}
-                    className="hidden"
+                    type="text"
+                    name="title"
+                    placeholder="Tytuł przepisu"
+                    value={recipe.title}
+                    onChange={handleInputChange}
+                    className={`${inputClasses} text-lg font-medium`}
+                    required
                   />
-                  {step.imagePreview && (
-                    <img
-                      src={step.imagePreview}
-                      alt="Podgląd kroku"
-                      className="h-20 w-20 rounded-md border object-cover"
-                    />
-                  )}
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    <span className="font-semibold">Slug:</span> {recipe.slug}
+                  </p>
+                  <textarea
+                    name="description"
+                    value={recipe.description}
+                    onChange={handleInputChange}
+                    placeholder="Krótki, apetyczny opis przepisu..."
+                    className={inputClasses}
+                    rows={3}
+                  />
                 </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-        <button
-          type="button"
-          onClick={addStep}
-          className="mt-4 flex items-center gap-2 font-medium text-green-600 hover:text-green-800"
-        >
-          <Plus size={18} />
-          Dodaj krok
-        </button>
-      </div>
+              </div>
+            </section>
 
-      {/* --- ZAPIS --- */}
-      <div className="flex justify-end pt-8">
-        <button
-          type="submit"
-          disabled={isSaving}
-          className="rounded-md bg-black px-8 py-3 font-semibold text-white transition-colors hover:bg-gray-800 disabled:bg-gray-400"
-        >
-          {isSaving ? "Zapisywanie..." : "Zapisz przepis"}
-        </button>
-      </div>
-    </form>
+            {/* --- Składniki --- */}
+            <section className={cardClasses}>
+              <div className="p-5">
+                <h2 className={cardHeaderClasses}>Składniki</h2>
+                <div className="space-y-3">
+                  <AnimatePresence>
+                    {recipe.ingredients.map((ing, index) => (
+                      <motion.div
+                        key={ing.id}
+                        layout
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-center gap-2"
+                      >
+                        <span className="font-mono text-sm text-zinc-500">
+                          {index + 1}.
+                        </span>
+                        <input
+                          type="text"
+                          placeholder="np. 200g mąki pszennej"
+                          value={ing.value}
+                          onChange={(e) =>
+                            updateIngredient(ing.id, e.target.value)
+                          }
+                          className={inputClasses}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeIngredient(ing.id)}
+                          className={buttonClasses.danger}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+                <button
+                  type="button"
+                  onClick={addIngredient}
+                  className={`mt-4 ${buttonClasses.secondary}`}
+                >
+                  <Plus size={18} /> Dodaj składnik
+                </button>
+              </div>
+            </section>
+
+            {/* --- Kroki --- */}
+            <section className={cardClasses}>
+              <div className="p-5">
+                <h2 className={cardHeaderClasses}>Kroki przygotowania</h2>
+                <div className="space-y-6">
+                  <AnimatePresence>
+                    {recipe.steps.map((step, index) => (
+                      <motion.div
+                        key={step.id}
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="relative rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700/50 dark:bg-zinc-800/20"
+                      >
+                        <h3 className="mb-3 text-base font-semibold text-zinc-700 dark:text-zinc-300">
+                          Krok {index + 1}
+                        </h3>
+                        {recipe.steps.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeStep(step.id)}
+                            className={`absolute -top-3 -right-3 ${buttonClasses.danger} bg-white dark:bg-zinc-700`}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                        <div className="space-y-3">
+                          <input
+                            type="text"
+                            placeholder="Tytuł kroku (opcjonalny)"
+                            value={step.title}
+                            onChange={(e) =>
+                              updateStep(step.id, "title", e.target.value)
+                            }
+                            className={inputClasses}
+                          />
+                          <textarea
+                            placeholder="Opis kroku... Każda nowa linia będzie osobnym punktem."
+                            value={step.description}
+                            onChange={(e) =>
+                              updateStep(step.id, "description", [
+                                e.target.value,
+                              ])
+                            }
+                            className={inputClasses}
+                            rows={4}
+                          />
+                          <div className="flex items-center gap-4">
+                            <label
+                              htmlFor={`step-image-${step.id}`}
+                              className={`${buttonClasses.secondary} cursor-pointer`}
+                            >
+                              <ImageUp size={16} />
+                              <span>
+                                {step.image ? "Zmień zdjęcie" : "Dodaj zdjęcie"}
+                              </span>
+                            </label>
+                            <input
+                              type="file"
+                              id={`step-image-${step.id}`}
+                              accept="image/*"
+                              onChange={(e) =>
+                                handleStepImageChange(step.id, e)
+                              }
+                              className="hidden"
+                            />
+                            {step.imagePreview && (
+                              <div className="relative">
+                                <img
+                                  src={step.imagePreview}
+                                  alt="Podgląd"
+                                  className="h-16 w-16 rounded-md border object-cover"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+                <button
+                  type="button"
+                  onClick={addStep}
+                  className={`mt-6 ${buttonClasses.secondary}`}
+                >
+                  <Plus size={18} /> Dodaj krok
+                </button>
+              </div>
+            </section>
+          </div>
+
+          {/* === PRAWA KOLUMNA (SIDEBAR) === */}
+          <aside className="lg:col-span-1">
+            <div className="sticky top-24 space-y-8">
+              {/* --- Status --- */}
+              <section className={cardClasses}>
+                <div className="p-5">
+                  <h2 className={cardHeaderClasses}>Status</h2>
+                  <div className="space-y-4">
+                    <select
+                      name="category"
+                      value={recipe.category}
+                      onChange={handleInputChange}
+                      className={inputClasses}
+                      required
+                    >
+                      <option value="">Wybierz kategorię...</option>
+                      {CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      name="level"
+                      value={recipe.level}
+                      onChange={handleInputChange}
+                      className={inputClasses}
+                    >
+                      <option value="Łatwy">Łatwy</option>
+                      <option value="Średni">Średni</option>
+                      <option value="Trudny">Trudny</option>
+                    </select>
+                    <div className="flex items-center gap-3 rounded-md p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
+                      <input
+                        type="checkbox"
+                        name="recomended"
+                        id="recomended"
+                        checked={recipe.recomended}
+                        onChange={handleCheckboxChange}
+                        className="h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <label
+                        htmlFor="recomended"
+                        className="flex cursor-pointer items-center gap-2 font-medium text-zinc-700 dark:text-zinc-300"
+                      >
+                        Polecany przepis{" "}
+                        <Sparkles className="h-4 w-4 text-amber-500" />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* --- Zdjęcie główne --- */}
+              <section className={cardClasses}>
+                <div className="p-5">
+                  <h2 className={cardHeaderClasses}>Zdjęcie główne</h2>
+                  <div className="mt-2">
+                    <label
+                      htmlFor="hero-image-upload"
+                      className="relative flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 p-6 text-center transition hover:border-indigo-400 hover:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800/50 dark:hover:border-indigo-500 dark:hover:bg-zinc-700/50"
+                    >
+                      {recipe.imagePreview ? (
+                        <>
+                          <img
+                            src={recipe.imagePreview}
+                            alt="Podgląd zdjęcia głównego"
+                            className="h-40 w-full rounded-md object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              removeHeroImage();
+                            }}
+                            className={`${buttonClasses.danger} absolute -top-2 -right-2 bg-white dark:bg-zinc-700`}
+                          >
+                            <X size={16} />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="space-y-1">
+                          <ImageUp className="mx-auto h-12 w-12 text-zinc-400" />
+                          <span className="font-medium text-indigo-600 dark:text-indigo-400">
+                            Kliknij, aby przesłać
+                          </span>
+                          <p className="text-xs text-zinc-500">
+                            PNG, JPG, WEBP
+                          </p>
+                        </div>
+                      )}
+                    </label>
+                    <input
+                      type="file"
+                      id="hero-image-upload"
+                      accept="image/*"
+                      onChange={handleHeroImageChange}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* --- Makroskładniki --- */}
+              <section className={cardClasses}>
+                <div className="p-5">
+                  <h2 className={cardHeaderClasses}>Dane</h2>
+                  <div className="grid grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      name="time"
+                      value={recipe.time}
+                      onChange={handleInputChange}
+                      placeholder="Czas (np. 30m)"
+                      className={inputClasses}
+                    />
+                    <input
+                      type="number"
+                      name="calories"
+                      value={recipe.calories}
+                      onChange={handleInputChange}
+                      placeholder="Kalorie"
+                      className={inputClasses}
+                    />
+                    <input
+                      type="number"
+                      name="protein"
+                      value={recipe.protein}
+                      onChange={handleInputChange}
+                      placeholder="Białko (g)"
+                      className={inputClasses}
+                    />
+                    <input
+                      type="number"
+                      name="fat"
+                      value={recipe.fat}
+                      onChange={handleInputChange}
+                      placeholder="Tłuszcz (g)"
+                      className={inputClasses}
+                    />
+                    <input
+                      type="number"
+                      name="carbs"
+                      value={recipe.carbs}
+                      onChange={handleInputChange}
+                      placeholder="Węgle (g)"
+                      className={inputClasses}
+                    />
+                    <input
+                      type="number"
+                      name="fiber"
+                      value={recipe.fiber}
+                      onChange={handleInputChange}
+                      placeholder="Błonnik (g)"
+                      className={inputClasses}
+                    />
+                  </div>
+                </div>
+              </section>
+            </div>
+          </aside>
+        </main>
+      </form>
+    </div>
   );
 }
