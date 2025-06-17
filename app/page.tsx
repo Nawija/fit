@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <RecommendedRecipes recipes={recipesRecomend} />
+      <RecommendedRecipes recipes={recipesRecomend.slice(0, 8)} />
       <section className="mx-auto max-w-7xl px-4">
         <h2 className="mx-auto mb-6 text-start text-2xl font-semibold">
           Nowe przepisy

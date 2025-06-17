@@ -27,9 +27,9 @@ steps:
         pokrój w małe różyczki, sparz przez cztery minuty w gotującej się
         wodzie. Indyka, cebulę i suszone pomidory pokrój w paseczki , posiekaj
         czosnek. Z jajek oddziel żółtka.
-    image: /images/przepisy/1745331595420_1k2652791588872537600.avif
+    image: /12210698-v-1500x1500.jpg
   - title: Maślankę wymiesza
     description:
       - Maślankę wymieszaj z żółtkami i serem.
-    image: /images/przepisy/1745331595391_3k8097481588872538000.avif
+    image: /12210698-v-1500x1500.jpg
 ---
