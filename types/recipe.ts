@@ -1,10 +1,10 @@
 // /types/recipe.ts
 export interface Step {
-  id: string; // Unikalne ID dla klucza w React
+  id: string;
   title: string;
   description: string[];
-  image: File | null;
-  imagePreview?: string; // Do podglądu w UI
+  image: File | string | null;
+  imagePreview?: string;
 }
 
 export interface RecipeFormData {
@@ -19,7 +19,7 @@ export interface RecipeFormData {
   carbs: string;
   fiber: string;
   time: string;
-  image: File | null; // Główne zdjęcie
+  image: File | string | null;
   imagePreview?: string; // Podgląd
   description: string;
   ingredients: { id: string; value: string }[];

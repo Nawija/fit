@@ -1,167 +1,210 @@
-// app/api/recipes/[slug]/route.ts
-
-import fs from "fs";
-import { rename, writeFile } from "fs/promises";
+import { RecipeFormData } from "@/types/recipe";
+import fs from "fs/promises";
 import matter from "gray-matter";
-import { NextResponse } from "next/server";
+import yaml from "js-yaml";
+import { NextRequest, NextResponse } from "next/server";
 import path from "path";
+import sharp from "sharp";
 
-const RECIPES_PATH = path.join(process.cwd(), "content/recipes");
-const IMAGES_PATH = path.join(process.cwd(), "public/images/recipes");
+const RECIPES_CONTENT_PATH = path.join(process.cwd(), "content/recipes");
+const RECIPES_PUBLIC_PATH = path.join(process.cwd(), "public/images/recipes");
 
-function slugify(text: string): string {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w\-]+/g, "")
-    .replace(/\-\-+/g, "-");
+interface Step {
+  title: string;
+  description: string[];
+  image: File | string | null;
 }
+// Typ danych, które zapisujemy w pliku .md
+type FinalRecipeData = Omit<
+  RecipeFormData,
+  "image" | "steps" | "imagePreview" | "ingredients"
+> & {
+  date: string;
+  image: File | string | null;
+  ingredients: string[];
+  steps: Step[];
+};
 
-export async function GET(
-  _req: Request,
-  context: { params: Promise<{ slug: string }> },
-) {
-  const params = await context.params;
-  const slug = params.slug;
-
-  let categories: string[] = [];
+async function findRecipePath(
+  slug: string,
+): Promise<{ filePath: string; category: string } | null> {
   try {
-    categories = fs.readdirSync(RECIPES_PATH).filter((file) => {
-      const fullPath = path.join(RECIPES_PATH, file);
-      return fs.statSync(fullPath).isDirectory();
-    });
-  } catch {
-    return NextResponse.json({ error: "Błąd serwera" }, { status: 500 });
-  }
-
-  for (const category of categories) {
-    const blogPath = path.join(RECIPES_PATH, category, `${slug}.md`);
-    if (fs.existsSync(blogPath)) {
-      try {
-        const fileContent = fs.readFileSync(blogPath, "utf-8");
-        const { data, content } = matter(fileContent);
-
-        const paragraphs = content.split(/\n\s*\n/);
-
-        return NextResponse.json({
-          title: data.title || "",
-          category, // Zwracamy kategorię
-          paragraphs,
-          date: data.date,
-          images: data.images || [],
-          image: data.image || null,
-        });
-      } catch {
-        return NextResponse.json(
-          { error: "Błąd parsowania pliku" },
-          { status: 500 },
-        );
+    const categories = await fs.readdir(RECIPES_CONTENT_PATH);
+    for (const category of categories) {
+      const categoryPath = path.join(RECIPES_CONTENT_PATH, category);
+      const stats = await fs.stat(categoryPath);
+      if (stats.isDirectory()) {
+        const filePath = path.join(categoryPath, `${slug}.md`);
+        try {
+          await fs.access(filePath);
+          return { filePath, category };
+        } catch {
+          // Plik nie istnieje w tej kategorii, kontynuuj
+        }
       }
     }
+  } catch (error) {
+    console.error("Błąd podczas wyszukiwania przepisu:", error);
   }
-
-  return NextResponse.json({ error: "Nie znaleziono wpisu" }, { status: 404 });
+  return null;
 }
 
-export async function PUT(
-  req: Request,
-  context: { params: Promise<{ slug: string }> },
+// --- POBIERANIE DANYCH DO FORMULARZA EDYCJI ---
+export async function GET(
+  _req: Request,
+  { params }: { params: { slug: string } },
 ) {
-  const params = await context.params;
-  const oldSlug = params.slug;
+  const { slug } = params;
+  if (!slug) {
+    return NextResponse.json({ message: "Brak sluga" }, { status: 400 });
+  }
 
-  const formData = await req.formData();
-
-  const title = formData.get("title") as string;
-  const category = formData.get("category") as string;
-  const paragraphs = JSON.parse(
-    formData.get("paragraphs") as string,
-  ) as string[];
-  const date = formData.get("date") as string;
-  const heroIndex = formData.get("heroIndex")
-    ? parseInt(formData.get("heroIndex") as string)
-    : null;
-  const newImages = formData.getAll("images") as File[];
-
-  const newSlug = slugify(title);
-
-  const oldBlogDir = path.join(RECIPES_PATH, category);
-  const oldBlogFile = path.join(oldBlogDir, `${oldSlug}.md`);
-  const newBlogFile = path.join(oldBlogDir, `${newSlug}.md`);
-
-  const oldImageDir = path.join(IMAGES_PATH, category, oldSlug);
-  const newImageDir = path.join(IMAGES_PATH, category, newSlug);
-
-  // 1. Sprawdź istnienie bloga
-  if (!fs.existsSync(oldBlogFile)) {
+  const recipeInfo = await findRecipePath(slug);
+  if (!recipeInfo) {
     return NextResponse.json(
-      { error: "Nie znaleziono bloga" },
+      { message: "Nie znaleziono przepisu" },
       { status: 404 },
     );
   }
 
-  // 2. Wczytaj aktualne dane
-  const fileContent = fs.readFileSync(oldBlogFile, "utf-8");
-  const { data } = matter(fileContent);
+  try {
+    const fileContent = await fs.readFile(recipeInfo.filePath, "utf-8");
+    const { data } = matter(fileContent);
 
-  // 3. Obsługa folderu obrazków
-  if (oldSlug !== newSlug && fs.existsSync(oldImageDir)) {
-    await rename(oldImageDir, newImageDir);
+    // Zwracamy surowe dane z frontmatter, frontend je przetworzy
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error(`Błąd odczytu pliku ${slug}.md:`, error);
+    return NextResponse.json(
+      { message: "Wewnętrzny błąd serwera" },
+      { status: 500 },
+    );
   }
+}
 
-  if (!fs.existsSync(newImageDir)) {
-    fs.mkdirSync(newImageDir, { recursive: true });
+// --- ZAPISYWANIE ZMIAN (EDYCJA) ---
+export async function PUT(
+  req: NextRequest,
+  { params: { slug: oldSlug } }: { params: { slug: string } },
+) {
+  try {
+    const formData = await req.formData();
+    const dataString = formData.get("data") as string;
+    if (!dataString) {
+      return NextResponse.json(
+        { message: "Brak danych przepisu." },
+        { status: 400 },
+      );
+    }
+
+    const recipeData: RecipeFormData = JSON.parse(dataString);
+    const { slug: newSlug, category: newCategory } = recipeData;
+    const oldCategory = formData.get("oldCategory") as string; // Pobieramy starą kategorię
+
+    // --- 1. Obsługa zmiany ścieżek ---
+    const oldRecipePath = path.join(
+      RECIPES_CONTENT_PATH,
+      oldCategory,
+      `${oldSlug}.md`,
+    );
+    const newRecipePath = path.join(
+      RECIPES_CONTENT_PATH,
+      newCategory,
+      `${newSlug}.md`,
+    );
+    const oldImagesDir = path.join(RECIPES_PUBLIC_PATH, oldCategory, oldSlug);
+    const newImagesDir = path.join(RECIPES_PUBLIC_PATH, newCategory, newSlug);
+
+    const slugChanged = oldSlug !== newSlug;
+    const categoryChanged = oldCategory !== newCategory;
+    const pathChanged = slugChanged || categoryChanged;
+
+    if (pathChanged) {
+      // Jeśli ścieżka się zmieniła, przenieś folder z obrazkami
+      try {
+        await fs.access(oldImagesDir);
+        await fs.mkdir(path.dirname(newImagesDir), { recursive: true });
+        await fs.rename(oldImagesDir, newImagesDir);
+      } catch (e) {
+        // Folder nie istniał, to OK, tworzymy nowy
+        await fs.mkdir(newImagesDir, { recursive: true });
+      }
+    } else {
+      await fs.mkdir(newImagesDir, { recursive: true });
+    }
+
+    // --- 2. Przetwarzanie i zapis nowych obrazów ---
+    const images = formData.getAll("images") as File[];
+    const imagePathMap = new Map<string, string>();
+    for (const image of images) {
+      const originalFilename = image.name;
+      const arrayBuffer = await image.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const baseName = path.parse(originalFilename).name;
+      const webpFileName = `${baseName}.webp`;
+      const webpPath = path.join(newImagesDir, webpFileName);
+
+      await sharp(buffer)
+        .resize({ width: 1200, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toFile(webpPath);
+
+      const publicSrc = `/images/recipes/${newCategory}/${newSlug}/${webpFileName}`;
+      imagePathMap.set(originalFilename, publicSrc);
+    }
+
+    const finalData: FinalRecipeData = {
+      ...recipeData,
+      date: new Date().toISOString(),
+      ingredients: recipeData.ingredients
+        .map((ing) => ing.value)
+        .filter(Boolean),
+      image: recipeData.image
+        ? (imagePathMap.get(path.basename(recipeData.image)) ??
+          recipeData.image)
+        : null,
+      steps: recipeData.steps.map((step) => ({
+        title: step.title,
+        description: Array.isArray(step.description)
+          ? step.description[0].split("\n").filter((line) => line.trim() !== "")
+          : [],
+        image: step.image
+          ? (imagePathMap.get(path.basename(step.image)) ?? step.image)
+          : null,
+      })),
+    };
+
+    // --- 4. Zapis do pliku .md ---
+    const yamlString = yaml.dump(finalData, { skipInvalid: true });
+    const markdownContent = `---
+${yamlString}---
+`;
+    await fs.mkdir(path.dirname(newRecipePath), { recursive: true });
+    await fs.writeFile(newRecipePath, markdownContent, "utf-8");
+
+    // Jeśli ścieżka się zmieniła, usuń stary plik .md
+    if (pathChanged && oldRecipePath !== newRecipePath) {
+      try {
+        await fs.unlink(oldRecipePath);
+      } catch (e) {
+        console.warn(
+          "Nie udało się usunąć starego pliku, możliwe, że już nie istniał:",
+          oldRecipePath,
+        );
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Przepis zaktualizowany.",
+    });
+  } catch (error) {
+    console.error("Błąd zapisu przepisu:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Wewnętrzny błąd serwera";
+    return NextResponse.json(
+      { message: "Wewnętrzny błąd serwera", error: errorMessage },
+      { status: 500 },
+    );
   }
-
-  // 4. Zapisz nowe obrazy
-  const savedImages = [...(data.images || [])];
-
-  for (const image of newImages) {
-    const bytes = await image.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const fileName = `${Date.now()}-${image.name}`;
-    const filePath = path.join(newImageDir, fileName);
-    const imageUrl = `/images/recipes/${category}/${newSlug}/${fileName}`;
-
-    await writeFile(filePath, buffer);
-    savedImages.push({ src: imageUrl });
-  }
-
-  const normalizeString = (str: string) => `${str.replace(/\n/g, "").trim()}`;
-
-  const heroImage =
-    heroIndex !== null && savedImages[heroIndex]
-      ? normalizeString(savedImages[heroIndex].src)
-      : null;
-
-  const normalizedImages = savedImages.map((img) => ({
-    src: normalizeString(img.src),
-    width: img.width || undefined,
-    height: img.height || undefined,
-  }));
-
-  const newFrontmatter = {
-    ...data,
-    title,
-    slug: newSlug,
-    category,
-    date,
-    images: normalizedImages,
-    image: heroImage,
-  };
-
-  // 6. Zamień na Markdown z frontmatter
-  const markdown = matter.stringify(paragraphs.join("\n\n"), newFrontmatter);
-
-  // 7. Zapisz plik Markdown pod nowym slugiem
-  fs.writeFileSync(newBlogFile, markdown, "utf-8");
-
-  // 8. Usuń stary plik Markdown jeśli zmieniono slug
-  if (oldSlug !== newSlug && fs.existsSync(oldBlogFile)) {
-    fs.unlinkSync(oldBlogFile);
-  }
-
-  return NextResponse.json({ success: true, slug: newSlug });
 }

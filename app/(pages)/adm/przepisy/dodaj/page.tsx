@@ -40,18 +40,17 @@ const initialRecipeState: RecipeFormData = {
 
 // --- Stylowanie dla spójności ---
 const inputClasses =
-  "w-full rounded-md border-zinc-300 bg-white/50 text-zinc-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-100 dark:focus:border-indigo-600 dark:focus:ring-indigo-600";
-const cardClasses =
-  "rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-800/50";
+  "w-full rounded-md p-2 border-zinc-300 bg-gray-50 border text-zinc-900 focus:border-blue-500 focus:ring-blue-500";
+const cardClasses = "rounded-xl border border-zinc-200 bg-white shadow-sm";
 const cardHeaderClasses =
   "mb-4 border-b border-zinc-200 pb-3 text-lg font-semibold text-zinc-800 dark:border-zinc-700 dark:text-zinc-200";
 const buttonClasses = {
   primary:
-    "inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-zinc-900",
+    "inline-flex items-center cursor-pointer justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-zinc-900",
   secondary:
-    "inline-flex items-center justify-center gap-2 rounded-md bg-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600 dark:focus:ring-zinc-500 dark:focus:ring-offset-zinc-900",
+    "inline-flex items-center justify-center cursor-pointer gap-2 rounded-md bg-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600 dark:focus:ring-zinc-500 dark:focus:ring-offset-zinc-900",
   danger:
-    "rounded-full p-2 text-zinc-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-500",
+    "rounded-full p-2 text-zinc-500 cursor-pointer transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-500",
 };
 
 export default function AddRecipePage() {
@@ -203,7 +202,7 @@ export default function AddRecipePage() {
     });
 
     const dataForPathBasenameBackend = {
-      ...recipe,
+      ...recipe, // To już zawiera `ingredients` w formacie [{ id, value }]
       image: recipe.image
         ? `/fake/path/${`hero_${recipe.slug}_${recipe.image.name}`}`
         : null,
@@ -216,9 +215,6 @@ export default function AddRecipePage() {
           ? `/fake/path/${`step_${index}_${recipe.slug}_${step.image.name}`}`
           : null,
       })),
-      ingredients: recipe.ingredients
-        .map((ing) => ing.value)
-        .filter((val) => val.trim() !== ""),
     };
     // Używamy wersji z `path.basename`, bo to ostatnio zaimplementowaliśmy w backendzie.
     formData.append("data", JSON.stringify(dataForPathBasenameBackend));
@@ -245,12 +241,12 @@ export default function AddRecipePage() {
 
   // --- NOWY DESIGN KOMPONENTU (JSX) ---
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+    <div className="min-h-screen bg-zinc-50">
       <form onSubmit={handleSave}>
         {/* === PRZYKLEJONY NAGŁÓWEK === */}
-        <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/70 px-4 py-3 backdrop-blur-lg sm:px-6 lg:px-8 dark:border-zinc-800 dark:bg-zinc-900/70">
+        <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/70 px-4 py-3 backdrop-blur-lg sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-6xl items-center justify-between">
-            <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-xl font-bold text-zinc-900">
               {recipe.title || "Nowy przepis"}
             </h1>
             <button
@@ -387,21 +383,10 @@ export default function AddRecipePage() {
                             }
                             className={inputClasses}
                           />
-                          <textarea
-                            placeholder="Opis kroku... Każda nowa linia będzie osobnym punktem."
-                            value={step.description}
-                            onChange={(e) =>
-                              updateStep(step.id, "description", [
-                                e.target.value,
-                              ])
-                            }
-                            className={inputClasses}
-                            rows={4}
-                          />
                           <div className="flex items-center gap-4">
                             <label
                               htmlFor={`step-image-${step.id}`}
-                              className={`${buttonClasses.secondary} cursor-pointer`}
+                              className={`${buttonClasses.secondary} cursor-pointer my-2`}
                             >
                               <ImageUp size={16} />
                               <span>
@@ -422,11 +407,22 @@ export default function AddRecipePage() {
                                 <img
                                   src={step.imagePreview}
                                   alt="Podgląd"
-                                  className="h-16 w-16 rounded-md border object-cover"
+                                  className="h-12 w-12 rounded-md border object-cover"
                                 />
                               </div>
                             )}
                           </div>
+                          <textarea
+                            placeholder="Opis kroku... Każda nowa linia będzie osobnym punktem."
+                            value={step.description}
+                            onChange={(e) =>
+                              updateStep(step.id, "description", [
+                                e.target.value,
+                              ])
+                            }
+                            className={inputClasses}
+                            rows={4}
+                          />
                         </div>
                       </motion.div>
                     ))}
@@ -482,13 +478,13 @@ export default function AddRecipePage() {
                         id="recomended"
                         checked={recipe.recomended}
                         onChange={handleCheckboxChange}
-                        className="h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
+                        className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
                       />
                       <label
                         htmlFor="recomended"
                         className="flex cursor-pointer items-center gap-2 font-medium text-zinc-700 dark:text-zinc-300"
                       >
-                        Polecany przepis{" "}
+                        Poleceny przepis{" "}
                         <Sparkles className="h-4 w-4 text-amber-500" />
                       </label>
                     </div>
@@ -503,7 +499,7 @@ export default function AddRecipePage() {
                   <div className="mt-2">
                     <label
                       htmlFor="hero-image-upload"
-                      className="relative flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 p-6 text-center transition hover:border-indigo-400 hover:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800/50 dark:hover:border-indigo-500 dark:hover:bg-zinc-700/50"
+                      className="relative flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 p-6 text-center transition hover:border-blue-400 hover:bg-zinc-100 dark:hover:border-blue-500 dark:hover:bg-zinc-700/50"
                     >
                       {recipe.imagePreview ? (
                         <>
@@ -526,7 +522,7 @@ export default function AddRecipePage() {
                       ) : (
                         <div className="space-y-1">
                           <ImageUp className="mx-auto h-12 w-12 text-zinc-400" />
-                          <span className="font-medium text-indigo-600 dark:text-indigo-400">
+                          <span className="font-medium text-blue-600 dark:text-blue-400">
                             Kliknij, aby przesłać
                           </span>
                           <p className="text-xs text-zinc-500">

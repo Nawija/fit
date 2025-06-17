@@ -46,15 +46,15 @@ export default function RecipeListPage() {
   };
 
   // Sort
-  const sortedrecipes = recipes.sort((a, b) => {
+  const sortedrecipes = recipes.sort((b, a) => {
     const dateA = a.date ? new Date(a.date).getTime() : 0;
     const dateB = b.date ? new Date(b.date).getTime() : 0;
     return dateA - dateB;
   });
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-6">
+      <div className="mx-auto mb-6 flex max-w-screen-2xl items-center justify-between">
         <h1 className="text-2xl font-bold">Lista Przepisów</h1>
         <Link href="/adm/przepisy/dodaj">
           <MainBtn>Dodaj przepis</MainBtn>
@@ -66,16 +66,16 @@ export default function RecipeListPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-transparent border-t-blue-500" />
         </div>
       ) : (
-        <ul className="space-y-4 py-4">
+        <ul className="grid grid-cols-4 gap-3 max-w-screen-2xl mx-auto">
           {sortedrecipes.map((recipe) => (
             <li
               key={recipe.slug}
-              className="flex items-center justify-between rounded border border-gray-200 p-2 transition-colors hover:bg-gray-50"
+              className="flex flex-col items-center justify-between rounded border border-gray-200 p-2 transition-colors hover:bg-gray-50"
             >
-              <div className="flex items-center">
+              <div className="flex items-start">
                 <Image
-                  height={150}
-                  width={150}
+                  height={100}
+                  width={100}
                   src={recipe.heroSrc}
                   alt={recipe.title}
                 />
@@ -86,22 +86,22 @@ export default function RecipeListPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 mt-3">
                 <Link
                   href={`/przepis/${recipe.category}/${recipe.slug}`}
-                  className="text-gray-600 hover:underline"
+                  className="text-gray-600 hover:underline cursor-pointer"
                 >
                   Podgląd
                 </Link>
                 <Link
                   href={`/adm/przepisy/edytuj/${recipe.slug}`}
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-600 hover:underline cursor-pointer"
                 >
                   Edytuj
                 </Link>
                 <button
                   onClick={() => handleDelete(recipe.slug, recipe.category)}
-                  className="text-red-600 hover:underline"
+                  className="text-red-600 hover:underline cursor-pointer"
                 >
                   Usuń
                 </button>
