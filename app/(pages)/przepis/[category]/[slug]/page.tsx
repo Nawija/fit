@@ -31,9 +31,10 @@ function formatCategory(str: string): string {
 export default async function RecipeCategorySlugPage({
   params,
 }: {
-  params: { category: string; slug: string };
+  params: Promise<{ category: string; slug: string }>;
 }) {
-  const { category, slug } = params;
+  const awaitedParams = await Promise.resolve(params);
+  const { category, slug } = awaitedParams;
   const recipe = await getRecipeBySlugAndCategory(category, slug);
 
   if (!recipe) {
