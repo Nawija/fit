@@ -58,7 +58,7 @@ export default async function RecipeCategorySlugPage({
   } = recipe;
 
   return (
-    <div className="anim-opacity bg-slate-50 text-slate-800">
+    <div className="anim-opacity bg-slate-50 text-slate-800 gap-6">
       <article>
         {/* === SEKCJA HERO === */}
         <div className="-mt-6 h-[70vh] w-full">
@@ -118,9 +118,9 @@ export default async function RecipeCategorySlugPage({
 
         {/* === GŁÓWNA TREŚĆ (2 KOLUMNY) === */}
         <div className="relative h-full w-full bg-slate-50 p-2">
-          <div className="relative z-20 mx-auto grid max-w-screen-2xl grid-cols-1 gap-8 px-4 pb-8 lg:grid-cols-3 lg:gap-12">
+          <div className="relative z-20 mx-auto grid max-w-screen-2xl grid-cols-1 gap-6 px-4 pb-8 lg:grid-cols-3">
             {/* LEWA KOLUMNA: OPIS I KROKI */}
-            <div className="order-1 -mt-12 lg:order-first lg:col-span-2">
+            <div className="order-1 -mt-8 lg:order-first lg:col-span-2">
               <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-lg md:p-8">
                 {/* Krótki opis przepisu */}
                 {description && (
@@ -137,14 +137,14 @@ export default async function RecipeCategorySlugPage({
                 {/* Kroki przygotowania */}
                 <div className={description ? "mt-12" : ""}>
                   <h2 className="mb-8 flex items-center gap-3 text-3xl font-bold">
-                    <Soup size={32} className="text-indigo-500" />
+                    <Soup size={32} className="text-blue-500" />
                     Przygotowanie
                   </h2>
                   <div className="space-y-10">
                     {steps?.map((step: RecipeSteps, idx) => (
-                      <div key={idx} className="flex gap-4 md:gap-6">
-                        <div className="flex-shrink-0 text-3xl font-bold text-slate-300 md:text-4xl">
-                          {idx + 1}.
+                      <div key={idx} className="flex flex-col gap-4 md:gap-6">
+                        <div className="flex-shrink-0 text-3xl font-bold text-blue-400 md:text-4xl">
+                          Krok {idx + 1}.
                         </div>
                         <div className="flex-grow">
                           {step.title && (
@@ -157,7 +157,7 @@ export default async function RecipeCategorySlugPage({
                               <li key={i} className="flex items-start gap-3">
                                 <Plus
                                   size={16}
-                                  className="mt-1.5 flex-shrink-0 text-indigo-500"
+                                  className="mt-1.5 flex-shrink-0 text-blue-500"
                                 />
                                 <span>{desc}</span>
                               </li>
@@ -183,8 +183,8 @@ export default async function RecipeCategorySlugPage({
             </div>
 
             {/* PRAWA KOLUMNA: SKŁADNIKI I DANE */}
-            <aside className="-mt-12 lg:col-span-1">
-              <div className="sticky top-4 space-y-8">
+            <aside className="-mt-8 lg:col-span-1">
+              <div className="sticky top-4 gap-6">
                 {/* Karta Składników */}
                 {ingredients && ingredients.length > 0 && (
                   <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-lg">

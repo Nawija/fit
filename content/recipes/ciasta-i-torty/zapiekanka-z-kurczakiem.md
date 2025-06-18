@@ -3,8 +3,8 @@ title: Zapiekanka z kurczakiem
 level: Łatwy
 slug: zapiekanka-z-kurczakiem
 recomended: false
-category: ciasta i torty
-date: '2025-06-18T12:52:52.175Z'
+category: ciasta-i-torty
+date: '2025-06-18T21:36:55.935Z'
 calories: '137'
 protein: '11'
 fat: '5'
@@ -23,8 +23,7 @@ description: >-
 
   - dokładny opis wykonania wraz ze zdjęciami 
 image: >-
-  /images/recipes/naleśniki i
-  placki/zapiekanka-z-kurczakiem/hero_zapiekanka-z-kurczakiem_NewIdea_Bedroom1-159.webp
+  /images/recipes/ciasta-i-torty/zapiekanka-z-kurczakiem/hero_zapiekanka-z-kurczakiem_23362204-v-1080x1369.webp
 ingredients: []
 steps:
   - title: Zapiekanka makaronowa z kurczakiem
@@ -54,6 +53,4 @@ steps:
     image: >-
       /images/recipes/naleśniki i
       placki/zapiekanka-z-kurczakiem/step_1_zapiekanka-z-kurczakiem_23362162-v-1080x1447.webp
-originalSlug: zapiekanka-z-kurczakiem
-originalCategory: nalesniki-i-placki
 ---
