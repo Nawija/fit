@@ -1,7 +1,7 @@
 // /app/adm/przepisy/edytuj/[slug]/page.tsx
 "use client";
 
-import RecipeForm from "@/components/admin/RecipeForm";
+import RecipeForm from "@/components/admin/RecipeForm"; // Zakładając, że to jest ścieżka
 import { Recipe, RecipeFormState } from "@/types/recipe";
 import { useEffect, useState } from "react";
 
@@ -17,17 +17,11 @@ export default function EditRecipePage({
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Funkcja fetchRecipe pozostaje bez zmian...
   useEffect(() => {
-    // Upewniamy się, że slug na pewno istnieje, zanim wykonamy fetch
-    if (!slug) {
-      setLoading(false);
-      setError("Brak identyfikatora przepisu w adresie URL.");
-      return;
-    }
-
     const fetchRecipe = async () => {
       try {
-        // ZMIANA: Używamy stabilnej zmiennej `slug`
         const res = await fetch(`/api/recipes/${slug}`);
         if (!res.ok) {
           const errorData = await res.json();
@@ -37,7 +31,6 @@ export default function EditRecipePage({
         }
         const data: Recipe = await res.json();
 
-        // Transformacja danych z API na stan formularza
         const transformedData: RecipeFormState = {
           ...data,
           originalSlug: data.slug,
@@ -51,12 +44,11 @@ export default function EditRecipePage({
           steps: data.steps.map((step) => ({
             id: crypto.randomUUID(),
             title: step.title,
-            description: step.description.join("\n"),
+            description: Array.isArray(step.description) ? step.description.join("\n") : step.description, // Zabezpieczenie
             image: null,
             existingImageUrl: step.image || undefined,
           })),
         };
-
         setInitialData(transformedData);
       } catch (err: any) {
         setError(err.message);
@@ -64,10 +56,12 @@ export default function EditRecipePage({
         setLoading(false);
       }
     };
-
     fetchRecipe();
-  }, [slug]); // ZMIANA: Zależnością jest teraz stabilna zmienna `slug`
+  }, [slug]);
 
+  // === TUTAJ JEST KLUCZOWA ZMIANA ===
+  // Ta funkcja jest teraz bardzo prosta. Przyjmuje FormData i wysyła je dalej.
+  // Nazwa `handleUpdate` jest bardziej adekwatna niż `onSave`.
   const handleUpdate = async (formData: FormData) => {
     try {
       const res = await fetch(`/api/recipes/${slug}`, {
@@ -75,10 +69,7 @@ export default function EditRecipePage({
         body: formData,
       });
 
-      // Jeśli odpowiedź NIE jest pomyślna (np. status 400, 500)
       if (!res.ok) {
-        // Spróbuj sparsować ciało błędu jako JSON, ponieważ nasz API route
-        // powinien zwracać błędy w tym formacie.
         const errorResult = await res.json();
         return {
           success: false,
@@ -86,23 +77,17 @@ export default function EditRecipePage({
         };
       }
 
-      // Jeśli odpowiedź JEST pomyślna (status 2xx)
       const successResult = await res.json();
       return {
         success: true,
-        ...successResult, // Zawiera message, slug, categorySlug
+        ...successResult,
       };
     } catch (error) {
-      // Ten catch złapie błędy sieciowe lub błędy parsowania JSON,
-      // jeśli serwer zwrócił coś zupełnie niepoprawnego (np. HTML).
       console.error("Błąd podczas wysyłania formularza:", error);
       let errorMessage = "Nie udało się połączyć z serwerem.";
-      if (error instanceof Error && error.name !== "SyntaxError") {
+      if (error instanceof Error) {
         errorMessage = error.message;
-      } else if (error instanceof Error && error.name === "SyntaxError") {
-        errorMessage = "Otrzymano nieprawidłową odpowiedź z serwera.";
       }
-
       return {
         success: false,
         message: errorMessage,
@@ -110,16 +95,13 @@ export default function EditRecipePage({
     }
   };
 
-  if (loading)
-    return (
-      <div className="p-8 text-center">Ładowanie danych formularza...</div>
-    );
-  if (error)
-    return <div className="p-8 text-center text-red-600">Błąd: {error}</div>;
-  if (!initialData)
-    return <div className="p-8 text-center">Nie znaleziono przepisu.</div>;
+  if (loading) return <div className="p-8 text-center">Ładowanie...</div>;
+  if (error) return <div className="p-8 text-center text-red-600">Błąd: {error}</div>;
+  if (!initialData) return <div className="p-8 text-center">Nie znaleziono przepisu.</div>;
 
   return (
+    // Teraz typy się zgadzają! onSave oczekuje funkcji, która przyjmuje FormData.
+    // Dokładnie tym jest handleUpdate. Błąd TypeScript zniknie.
     <RecipeForm mode="edit" initialData={initialData} onSave={handleUpdate} />
   );
 }

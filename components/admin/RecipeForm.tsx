@@ -5,6 +5,7 @@ import { CATEGORIES } from "@/constants";
 import { RecipeFormState, Step } from "@/types/recipe";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowLeft,
   ImageUp,
   LoaderCircle,
   Plus,
@@ -13,6 +14,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import slugify from "slugify";
@@ -299,12 +301,21 @@ export default function RecipeForm({
       <form onSubmit={handleSave}>
         {/* === PRZYKLEJONY NAGŁÓWEK === */}
         <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/70 px-4 py-3 backdrop-blur-lg sm:px-6 lg:px-8">
-          <div className="mx-auto flex max-w-6xl items-center justify-between">
-            <h1 className="text-xl font-bold text-zinc-900">
-              {mode === "add"
-                ? recipe.title || "Nowy przepis"
-                : `Edytuj: ${recipe.title}`}
-            </h1>
+          <div className="mx-auto flex max-w-7xl px-8 items-center justify-between">
+            <div className="flex items-center justify-center gap-4">
+              <Link
+                href="/adm/przepisy"
+                className="flex items-center justify-center gap-2"
+              >
+                <ArrowLeft size={18} />
+                <span>Powrót</span>
+              </Link>
+              <h1 className="text-xl font-bold text-zinc-900">
+                {mode === "add"
+                  ? recipe.title || "Nowy przepis"
+                  : `Edytuj: ${recipe.title}`}
+              </h1>
+            </div>
             <button
               type="submit"
               disabled={isSaving}

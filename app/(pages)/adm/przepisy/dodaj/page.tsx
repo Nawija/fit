@@ -3,22 +3,20 @@
 
 import RecipeForm from "@/components/admin/RecipeForm";
 
-
 export default function AddRecipePage() {
-    
-    const handleSave = async (formData: FormData) => {
-        const res = await fetch("/api/recipes", {
-            method: "POST",
-            body: formData,
-        });
+  const handleSave = async (formData: FormData) => {
+    const res = await fetch("/api/recipes", {
+      method: "POST",
+      body: formData,
+    });
 
-        const result = await res.json();
-        
-        return {
-            success: res.ok,
-            message: result.message,
-        };
+    const result = await res.json();
+
+    return {
+      success: res.ok,
+      message: result.message,
     };
+  };
 
-    return <RecipeForm mode="add" onSave={handleSave} />;
+  return <RecipeForm mode="add" onSave={handleSave} />;
 }
