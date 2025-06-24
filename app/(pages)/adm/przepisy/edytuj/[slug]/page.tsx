@@ -5,12 +5,13 @@ import RecipeForm from "@/components/admin/RecipeForm";
 import { Recipe, RecipeFormState } from "@/types/recipe";
 import { useEffect, useState } from "react";
 
-export default function EditRecipePage({
+export default async function EditRecipePage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = params;
+  const awaitedParams = await Promise.resolve(params);
+  const { slug } = awaitedParams;
 
   const [initialData, setInitialData] = useState<RecipeFormState | undefined>(
     undefined,
