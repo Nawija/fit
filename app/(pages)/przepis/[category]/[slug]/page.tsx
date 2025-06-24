@@ -118,7 +118,7 @@ export default async function RecipeCategorySlugPage({
         {/* === SEKCJA HERO W STYLU FACEBOOK === */}
         <div className="w-full bg-white shadow-sm">
           {/* 1. Zdjęcie w tle (Cover Photo) */}
-          <div className="relative h-[30vh] w-full md:h-[35vh]">
+          <div className="relative h-[20vh] w-full md:h-[35vh]">
             <Image
               src={image}
               alt={`Tło dla ${title}`}
