@@ -10,16 +10,10 @@ import slugify from "slugify";
 const RECIPES_CONTENT_PATH = path.join(process.cwd(), "content/recipes");
 const RECIPES_PUBLIC_PATH = path.join(process.cwd(), "public/images/recipes");
 
-// --- DEFINICJE TYPÓW ---
-// Typ dla pojedynczego kroku przepisu pochodzącego z formularza.
-// `image` jest tutaj nazwą pliku, a nie finalną ścieżką URL.
 type FormStep = Omit<Step, "image"> & {
   image?: string | null;
 };
 
-// Typ dla danych z formularza przepisu.
-// Zastępuje `any` i precyzyjnie określa, że niektóre pola (np. wartości odżywcze)
-// mogą być typu string, a kategoria jest nazwą, a nie "slugiem".
 type RecipeFormData = Omit<
   Recipe,
   | "date"
@@ -31,7 +25,7 @@ type RecipeFormData = Omit<
   | "fiber"
   | "fat"
 > & {
-  category: string; // Nazwa kategorii, np. "Dania Główne"
+  category: string;
   steps: FormStep[];
   protein?: number;
   calories?: number;

@@ -264,11 +264,20 @@ export default function RecipeForm({
           image: stepImageName,
         };
       }),
+      // Te pola są usuwane z typowania, więc TS nie będzie krzyczeć
+      category: recipe.category,
+      title: recipe.title,
+      slug: recipe.slug,
+      time: recipe.time,
+      calories: recipe.calories,
+      carbs: recipe.carbs,
+      fat: recipe.fat,
+      fiber: recipe.fiber,
+      level: recipe.level,
+      protein: recipe.protein,
+      recomended: recipe.recomended,
+      description: recipe.description,
     };
-
-    // Usuń niepotrzebne pola, których backend nie oczekuje
-    delete (dataToSend as any).imagePreview;
-    delete (dataToSend as any).existingImageUrl;
 
     formData.append("data", JSON.stringify(dataToSend));
 

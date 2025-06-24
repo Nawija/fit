@@ -17,7 +17,7 @@ export default function EditRecipePage({
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Funkcja fetchRecipe pozostaje bez zmian...
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -44,14 +44,15 @@ export default function EditRecipePage({
           steps: data.steps.map((step) => ({
             id: crypto.randomUUID(),
             title: step.title,
-            description: Array.isArray(step.description) ? step.description.join("\n") : step.description, // Zabezpieczenie
+            description: Array.isArray(step.description)
+              ? step.description.join("\n")
+              : step.description, // Zabezpieczenie
             image: null,
-            existingImageUrl: step.image || undefined,
+            existingImageUrl:
+              typeof step.image === "string" ? step.image : undefined,
           })),
         };
         setInitialData(transformedData);
-      } catch (err: any) {
-        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -96,8 +97,10 @@ export default function EditRecipePage({
   };
 
   if (loading) return <div className="p-8 text-center">Ładowanie...</div>;
-  if (error) return <div className="p-8 text-center text-red-600">Błąd: {error}</div>;
-  if (!initialData) return <div className="p-8 text-center">Nie znaleziono przepisu.</div>;
+  if (error)
+    return <div className="p-8 text-center text-red-600">Błąd: {error}</div>;
+  if (!initialData)
+    return <div className="p-8 text-center">Nie znaleziono przepisu.</div>;
 
   return (
     // Teraz typy się zgadzają! onSave oczekuje funkcji, która przyjmuje FormData.
