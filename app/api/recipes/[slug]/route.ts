@@ -8,9 +8,10 @@ import { findRecipePath, saveRecipe } from "../helpers/saveRecipe";
 // Funkcja GET pozostaje bez zmian...
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
-  const slug = params.slug;
+  const awaitedParams = await Promise.resolve(params);
+  const { slug } = awaitedParams;
   try {
     const recipeInfo = await findRecipePath(slug);
 
@@ -44,8 +45,10 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params: { slug } }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
+  const awaitedParams = await Promise.resolve(params);
+  const { slug } = awaitedParams;
   try {
     const formData = await req.formData();
 
