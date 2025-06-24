@@ -1,7 +1,7 @@
 // /app/adm/przepisy/edytuj/[slug]/page.tsx
 "use client";
 
-import RecipeForm from "@/components/admin/RecipeForm"; // Zakładając, że to jest ścieżka
+import RecipeForm from "@/components/admin/RecipeForm";
 import { Recipe, RecipeFormState } from "@/types/recipe";
 import { useEffect, useState } from "react";
 
@@ -16,7 +16,6 @@ export default function EditRecipePage({
     undefined,
   );
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Funkcja fetchRecipe pozostaje bez zmian...
   useEffect(() => {
@@ -83,11 +82,11 @@ export default function EditRecipePage({
         success: true,
         ...successResult,
       };
-    } catch (error) {
-      console.error("Błąd podczas wysyłania formularza:", error);
+    } catch (e) {
+      console.error("Błąd podczas wysyłania formularza:", e);
       let errorMessage = "Nie udało się połączyć z serwerem.";
-      if (error instanceof Error) {
-        errorMessage = error.message;
+      if (e instanceof Error) {
+        errorMessage = e.message;
       }
       return {
         success: false,
@@ -97,8 +96,6 @@ export default function EditRecipePage({
   };
 
   if (loading) return <div className="p-8 text-center">Ładowanie...</div>;
-  if (error)
-    return <div className="p-8 text-center text-red-600">Błąd: {error}</div>;
   if (!initialData)
     return <div className="p-8 text-center">Nie znaleziono przepisu.</div>;
 

@@ -125,7 +125,7 @@ export async function saveRecipe({
 
   // Użycie destrukturyzacji do usunięcia pól, których nie chcemy w finalnym obiekcie.
   // Jest to czystsze niż używanie `delete` z `as any`.
-  const { originalSlug, originalCategory, ...data } = recipeData;
+  const { ...data } = recipeData;
 
   // Tworzenie finalnego obiektu, który będzie zgodny z typem `Recipe`
   const finalData: Omit<Recipe, "date"> = {
