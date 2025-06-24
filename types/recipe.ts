@@ -8,10 +8,10 @@ export interface Ingredient {
 export interface Step {
   id: string;
   title: string;
-  description: string; 
-  image: File | string | null; 
-  imagePreview?: string; 
-  existingImageUrl?: string; 
+  description: string;
+  image: File | string | null;
+  imagePreview?: string;
+  existingImageUrl?: string;
 }
 
 export interface RecipeFormState {
@@ -20,11 +20,11 @@ export interface RecipeFormState {
   slug: string;
   recomended: boolean;
   category: string;
-  calories: string;
-  protein: string;
-  fat: string;
-  carbs: string;
-  fiber: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+  fiber: number;
   time: string;
   image: File | string | null;
   imagePreview?: string;
@@ -42,19 +42,15 @@ export interface Recipe {
   slug: string;
   recomended: boolean;
   category: string;
-  date: string; 
-  calories: string;
-  protein: string;
-  fat: string;
-  carbs: string;
-  fiber: string;
+  date: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+  fiber: number;
   time: string;
-  image: string | null; 
+  image: string | null;
   description: string;
-  ingredients: string[]; 
-  steps: {
-    title: string;
-    description: string[]; 
-    image: string | null;
-  }[];
+  ingredients: string[];
+  steps: Step[];
 }

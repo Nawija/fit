@@ -1,6 +1,6 @@
 // /app/api/recipes/helpers/saveRecipe.ts
 
-import { Recipe } from "@/types/recipe";
+import { Recipe, Step } from "@/types/recipe";
 import fs from "fs/promises";
 import yaml from "js-yaml";
 import path from "path";
@@ -9,6 +9,46 @@ import slugify from "slugify";
 
 const RECIPES_CONTENT_PATH = path.join(process.cwd(), "content/recipes");
 const RECIPES_PUBLIC_PATH = path.join(process.cwd(), "public/images/recipes");
+
+// --- DEFINICJE TYPÓW ---
+// Typ dla pojedynczego kroku przepisu pochodzącego z formularza.
+// `image` jest tutaj nazwą pliku, a nie finalną ścieżką URL.
+type FormStep = Omit<Step, "image"> & {
+  image?: string | null;
+};
+
+// Typ dla danych z formularza przepisu.
+// Zastępuje `any` i precyzyjnie określa, że niektóre pola (np. wartości odżywcze)
+// mogą być typu string, a kategoria jest nazwą, a nie "slugiem".
+type RecipeFormData = Omit<
+  Recipe,
+  | "date"
+  | "category"
+  | "steps"
+  | "protein"
+  | "calories"
+  | "carbs"
+  | "fiber"
+  | "fat"
+> & {
+  category: string; // Nazwa kategorii, np. "Dania Główne"
+  steps: FormStep[];
+  protein?: number;
+  calories?: number;
+  carbs?: number;
+  fiber?: number;
+  fat?: number;
+  originalSlug?: string;
+  originalCategory?: string;
+};
+
+interface SaveRecipeParams {
+  recipeData: RecipeFormData;
+  images: File[];
+  oldSlug?: string;
+  oldCategory?: string;
+}
+// --- KONIEC DEFINICJI TYPÓW ---
 
 export async function findRecipePath(
   slug: string,
@@ -22,17 +62,12 @@ export async function findRecipePath(
       try {
         await fs.access(filePath);
         return { filePath, category: categorySlug };
-      } catch {}
+      } catch {
+        // Plik nie istnieje w tej kategorii, kontynuuj pętlę
+      }
     }
   }
   return null;
-}
-
-interface SaveRecipeParams {
-  recipeData: any;
-  images: File[];
-  oldSlug?: string;
-  oldCategory?: string;
 }
 
 export async function saveRecipe({
@@ -44,17 +79,16 @@ export async function saveRecipe({
   const { slug: newSlug, category: newCategoryName } = recipeData;
   const isEditing = !!oldSlug;
 
-  // Ta opcja tworzy "slug" z nazwy kategorii: małe litery, myślniki zamiast spacji i brak polskich znaków.
-  // Jest idealna do tego, co chcesz osiągnąć.
   const slugifyOptions = { lower: true, strict: true, locale: "pl" };
   const newCategorySlug = slugify(newCategoryName, slugifyOptions);
 
   const oldCategorySlug =
     isEditing && oldCategory ? slugify(oldCategory, slugifyOptions) : null;
 
-  const oldImagesDir = isEditing
-    ? path.join(RECIPES_PUBLIC_PATH, oldCategorySlug!, oldSlug!)
-    : null;
+  const oldImagesDir =
+    isEditing && oldCategorySlug
+      ? path.join(RECIPES_PUBLIC_PATH, oldCategorySlug, oldSlug)
+      : null;
   const newImagesDir = path.join(RECIPES_PUBLIC_PATH, newCategorySlug, newSlug);
   const newRecipePath = path.join(
     RECIPES_CONTENT_PATH,
@@ -70,7 +104,7 @@ export async function saveRecipe({
       await fs.access(oldImagesDir);
       await fs.mkdir(path.dirname(newImagesDir), { recursive: true });
       await fs.rename(oldImagesDir, newImagesDir);
-    } catch (e) {
+    } catch {
       await fs.mkdir(newImagesDir, { recursive: true });
     }
   } else {
@@ -95,24 +129,28 @@ export async function saveRecipe({
     imagePathMap.set(originalFilename, publicSrc);
   }
 
-  // KLUCZOWA ZMIANA JEST TUTAJ
-  // W obiekcie, który zostanie zapisany do pliku, podmieniamy `newCategoryName`
-  // na `newCategorySlug`, który ma już odpowiedni format (bez polskich znaków, z myślnikami).
+  // Użycie destrukturyzacji do usunięcia pól, których nie chcemy w finalnym obiekcie.
+  // Jest to czystsze niż używanie `delete` z `as any`.
+  const { originalSlug, originalCategory, ...data } = recipeData;
+
+  // Tworzenie finalnego obiektu, który będzie zgodny z typem `Recipe`
   const finalData: Omit<Recipe, "date"> = {
-    ...recipeData,
-    // BYŁO: category: newCategoryName,
-    category: newCategorySlug, // JEST: Używamy przetworzonej nazwy kategorii
-    image: recipeData.image
-      ? (imagePathMap.get(recipeData.image) ?? recipeData.image)
-      : null,
-    steps: recipeData.steps.map((step: any) => ({
+    ...data,
+    category: newCategorySlug, // Ustawiamy "slug" kategorii
+    // Konwertujemy wartości odżywcze na liczby, upewniając się, że nie są puste
+    protein: Number(data.protein),
+    calories: Number(data.calories),
+    carbs: Number(data.carbs),
+    fiber: Number(data.fiber),
+    fat: Number(data.fat),
+    // Mapujemy główny obrazek i obrazki w krokach na nowe ścieżki URL
+    image: data.image ? (imagePathMap.get(data.image) ?? data.image) : null,
+    steps: data.steps.map((step) => ({
+      // TypeScript sam wywnioskuje typ `step` jako `FormStep`
       ...step,
       image: step.image ? (imagePathMap.get(step.image) ?? step.image) : null,
     })),
   };
-
-  delete (finalData as any).originalSlug;
-  delete (finalData as any).originalCategory;
 
   const fullData: Recipe = {
     ...finalData,
@@ -124,16 +162,18 @@ export async function saveRecipe({
   await fs.mkdir(path.dirname(newRecipePath), { recursive: true });
   await fs.writeFile(newRecipePath, markdownContent, "utf-8");
 
-  if (pathChanged) {
+  if (pathChanged && oldCategorySlug) {
     const oldRecipePath = path.join(
       RECIPES_CONTENT_PATH,
-      oldCategorySlug!,
+      oldCategorySlug,
       `${oldSlug!}.md`,
     );
     if (oldRecipePath !== newRecipePath) {
       try {
         await fs.unlink(oldRecipePath);
-      } catch {}
+      } catch {
+        // Ignorujemy błąd, jeśli stary plik nie istnieje
+      }
     }
   }
 

@@ -4,33 +4,27 @@ level: Łatwy
 slug: muffinki-z-truskawkami
 recomended: true
 category: babeczki-i-muffiny
-date: '2025-06-17T17:47:37.586Z'
-calories: '317'
-protein: '7'
-fat: '22'
-carbs: '44'
-fiber: '3'
+date: '2025-06-24T20:50:13.236Z'
+calories: 317
+protein: 7
+fat: 22
+carbs: 44
+fiber: 3
 time: 20minut
 description: >-
   Jajka i mleko wyjmij wcześniej z lodówki, by osiągnęły temperaturę
   pomieszczenia. Zanim zaczniesz szykować muffiny truskawkowe, polecam najpierw
   przeczytać cały przepis, by przygotować się odpowiednio wcześniej do kolejnych
   etapów wykonania.
-
-
-  Do upieczenia muffinek z truskawkami użyłam miękkich papilotek do muffinek o
-  średnicy u góry 7cm. Papilotki umieściłam dodatkowo w metalowej formie z
-  dołkami na babeczki/muffinki. Z podanej ilości składników wyszło mi 12 dużych
-  muffinek. 
-
-
-  Pieczenie: 165 stopni, środkowa półka z opcją pieczenia góra/dół.
-
-  Czas pieczenia: około 30-35 minut.
 image: >-
   /images/recipes/babeczki i
   muffiny/muffinki-z-truskawkami/hero_muffinki-z-truskawkami_80995748-v-1500x1500.webp
-ingredients: []
+ingredients:
+  - sdsdds
+  - dsdsds
+  - sddsdsdssdds
+  - dsdsdsdsds
+  - sddssddsds
 steps:
   - title: Przygotuj papilotki
     description:
@@ -42,7 +36,7 @@ steps:
         metalowych lub też zwykłych, miękkich papilotkach, które trzeba
         umieszczać w formie metalowej z dołkami - inaczej się rozejdą na boki.
         Aby jednak zmieścić ciasto, muszą one być większe niż klasyczne
-        papilotki na babeczki. 
+        papilotki na babeczki.
     image: >-
       /images/recipes/babeczki i
       muffiny/muffinki-z-truskawkami/step_0_muffinki-z-truskawkami_81349240-v-1080x1285.webp
@@ -50,7 +44,7 @@ steps:
     description:
       - >-
         Zacznij już nagrzewać piekarnik do 165 stopni w funkcją pieczenia
-        góra/dół lub 150 stopni z termoobiegiem. 
+        góra/dół lub 150 stopni z termoobiegiem.
     image: >-
       /images/recipes/babeczki i
       muffiny/muffinki-z-truskawkami/step_1_muffinki-z-truskawkami_81349253-v-1080x1080.webp
@@ -86,7 +80,7 @@ steps:
         formie).  Muffinki powinny bardzo ładnie urosnąć i lekko zarumienić się
         od góry. W małych wypiekach istotne jest to, by nie piec ich za długo.
         Jeśli ciasto piecze się dłużej, niż jest taka potrzeba, to traci wilgoć
-        i robi się suche.  
+        i robi się suche.
     image: >-
       /images/recipes/babeczki i
       muffiny/muffinki-z-truskawkami/step_4_muffinki-z-truskawkami_81349199-v-1080x1620.webp

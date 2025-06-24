@@ -3,23 +3,20 @@
 import { getRecipeBySlugAndCategory, RecipeSteps } from "@/lib/searchItems";
 import {
   BarChart3,
+  Check,
   ChefHat,
   ChevronRight,
   Clock,
   Flame,
-  Info,
-  Leaf,
-  Plus,
+  Home,
   Soup,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
-// Można ustawić, aby strony były generowane statycznie podczas budowania aplikacji
+import IngredientsCard from "./IngredientsCard";
 export const dynamic = "force-static";
 
-// Lepsza funkcja do formatowania, obsługuje wieloczłonowe nazwy
 function formatCategory(str: string): string {
   return str
     .replace(/-/g, " ")
@@ -27,6 +24,63 @@ function formatCategory(str: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
 }
+
+const MacroDonut = ({
+  value,
+  total,
+  label,
+  color,
+  unit,
+}: {
+  value: number;
+  total: number;
+  label: string;
+  color: string;
+  unit: string;
+}) => {
+  const percentage = total > 0 ? (value / total) * 100 : 0;
+  const circumference = 2 * Math.PI * 15.9155; // 2 * pi * r, gdzie r=15.9155, aby obwód był 100
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="flex flex-col items-center text-center">
+      <div className="relative h-28 w-28">
+        <svg viewBox="0 0 36 36" className="h-full w-full">
+          {/* Tło wykresu */}
+          <circle
+            cx="18"
+            cy="18"
+            r="15.9155"
+            className="stroke-current text-zinc-200"
+            strokeWidth="3"
+            fill="transparent"
+          />
+          {/* Pasek postępu */}
+          <circle
+            cx="18"
+            cy="18"
+            r="15.9155"
+            className={`stroke-current ${color}`}
+            strokeWidth="3"
+            fill="transparent"
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            transform="rotate(-90 18 18)"
+          />
+        </svg>
+        {/* Wartość w środku */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-lg font-bold text-zinc-800 lg:text-2xl">
+            {value}
+          </span>
+          <span className="text-xs lg:text-base text-zinc-500 -mt-1">{unit}</span>
+        </div>
+      </div>
+      <p className="mt-2 text-sm font-medium text-zinc-600">{label}</p>
+    </div>
+  );
+};
 
 export default async function RecipeCategorySlugPage({
   params,
@@ -41,8 +95,6 @@ export default async function RecipeCategorySlugPage({
     return notFound();
   }
 
-  // Założenie: przepis ma pole `description` oraz `ingredients`
-  // Jeśli ich nie ma, odpowiednie sekcje po prostu się nie wyświetlą
   const {
     title,
     image,
@@ -50,6 +102,7 @@ export default async function RecipeCategorySlugPage({
     time,
     calories,
     protein,
+    fiber,
     fat,
     carbs,
     description,
@@ -57,204 +110,240 @@ export default async function RecipeCategorySlugPage({
     steps,
   } = recipe;
 
+  const totalMacros = protein + fat + carbs;
+
   return (
-    <div className="anim-opacity bg-slate-50 text-slate-800 gap-6">
+    <div className="anim-opacity bg-zinc-50 text-zinc-800">
       <article>
-        {/* === SEKCJA HERO === */}
-        <div className="-mt-6 h-[70vh] w-full">
-          <header className="fixed h-[70vh] w-full">
-            {/* Obraz w tle */}
+        {/* === SEKCJA HERO W STYLU FACEBOOK === */}
+        <div className="w-full bg-white shadow-sm">
+          {/* 1. Zdjęcie w tle (Cover Photo) */}
+          <div className="relative h-[30vh] w-full md:h-[35vh]">
             <Image
               src={image}
-              alt={title}
+              alt={`Tło dla ${title}`}
+              quality={10}
               fill
-              className="object-cover"
+              className="object-cover blur-md"
               priority
             />
-            {/* Gradient dla czytelności tekstu */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+            {/* Gradient dla czytelności */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+          </div>
 
-            <div className="relative container mx-auto flex h-full flex-col justify-end p-4 pb-12 text-white md:p-8 md:pb-16">
+          {/* 2. Kontener na avatar, tytuł i kluczowe informacje */}
+          <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+            <div className="flex -translate-y-10 flex-col items-center pb-12 text-center md:flex-row md:items-end md:text-left">
+              {/* Avatar (zdjęcie dania) */}
+              <div className="relative h-48 w-48 flex-shrink-0 md:h-60 md:w-60">
+                <Image
+                  src={image}
+                  alt={title}
+                  fill
+                  className="rounded-full border-4 border-white object-cover shadow-lg md:border-8"
+                />
+              </div>
+
+              {/* Tytuł i opis */}
+              <div className="mt-4 md:ml-6">
+                <h1 className="text-4xl font-black tracking-tight text-zinc-900 md:text-5xl">
+                  {title}
+                </h1>
+                <p className="mt-2 max-w-2xl text-lg text-zinc-600">
+                  {description}
+                </p>
+              </div>
+            </div>
+
+            {/* 3. Pasek z nawigacją i kluczowymi informacjami */}
+            <div className="flex flex-col items-start justify-between border-t border-zinc-200 pt-3 pb-4 md:flex-row md:items-center">
               {/* Breadcrumbs (nawigacja) */}
-              <div className="mb-4 flex items-center text-sm text-slate-200">
-                <Link href="/" className="hover:text-white">
-                  Strona główna
+              <div className="flex items-center text-sm text-zinc-500">
+                <Link href="/" className="hover:text-zinc-900">
+                  <Home size={16} />
                 </Link>
                 <ChevronRight size={16} className="mx-1" />
-                <Link href="/przepisy" className="hover:text-white">
+                <Link href="/przepis" className="hover:text-zinc-900">
                   Przepisy
                 </Link>
                 <ChevronRight size={16} className="mx-1" />
                 <Link
                   href={`/przepisy/${category}`}
-                  className="font-semibold text-white"
+                  className="font-semibold text-zinc-900"
                 >
                   {formatCategory(category)}
                 </Link>
               </div>
 
-              <h1 className="text-4xl leading-tight font-extrabold tracking-tight text-balance md:text-6xl">
-                {title}
-              </h1>
-
-              {/* Kluczowe informacje */}
-              <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-lg">
-                <div className="flex items-center gap-2">
-                  <Clock size={20} />
-                  <span>{time}</span>
+              {/* Podstawowe info (Czas, Poziom, Porcje) */}
+              <div className="mt-4 flex gap-x-6 text-center text-zinc-700 md:mt-0">
+                <div className="flex flex-col items-center">
+                  <Clock
+                    size={36}
+                    className="mb-1 rounded-full bg-amber-100 p-2 text-zinc-500"
+                  />
+                  <span className="text-sm font-semibold">{time}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <ChefHat size={20} />
-                  <span>{level}</span>
+                <div className="flex flex-col items-center">
+                  <ChefHat
+                    size={36}
+                    className="mb-1 rounded-full bg-amber-100 p-2 text-zinc-500"
+                  />
+                  <span className="text-sm font-semibold">{level}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Flame size={20} />
-                  <span>{calories} kcal</span>
+                <div className="flex flex-col items-center">
+                  <ChefHat
+                    size={36}
+                    className="mb-1 rounded-full bg-amber-100 p-2 text-zinc-500"
+                  />
+                  <span className="text-sm font-semibold">
+                    {steps.length} Kroków{" "}
+                  </span>
                 </div>
               </div>
             </div>
-          </header>
+          </div>
         </div>
 
-        {/* === GŁÓWNA TREŚĆ (2 KOLUMNY) === */}
-        <div className="relative h-full w-full bg-slate-50 p-2">
-          <div className="relative z-20 mx-auto grid max-w-screen-2xl grid-cols-1 gap-6 px-4 pb-8 lg:grid-cols-3">
-            {/* LEWA KOLUMNA: OPIS I KROKI */}
-            <div className="order-1 -mt-8 lg:order-first lg:col-span-2">
-              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-lg md:p-8">
-                {/* Krótki opis przepisu */}
-                {description && (
-                  <>
-                    <h1 className="mb-4 text-2xl leading-tight font-bold tracking-tight text-balance md:text-3xl">
-                      {title}
-                    </h1>
-                    <div className="prose prose-lg max-w-none text-slate-600">
-                      <p>{description}</p>
-                    </div>
-                  </>
-                )}
+        {/* === NOWA, DEDYKOWANA SEKCJA WARTOŚCI ODŻYWCZYCH === */}
+        <div className="p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-7xl rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200">
+            <h2 className="mb-6 text-2xl font-bold text-zinc-800">
+              Wartości odżywcze w 1 porcji
+            </h2>
 
-                {/* Kroki przygotowania */}
-                <div className={description ? "mt-12" : ""}>
-                  <h2 className="mb-8 flex items-center gap-3 text-3xl font-bold">
-                    <Soup size={32} className="text-blue-500" />
-                    Przygotowanie
-                  </h2>
-                  <div className="space-y-10">
-                    {steps?.map((step: RecipeSteps, idx) => (
-                      <div key={idx} className="flex flex-col gap-4 md:gap-6">
-                        <div className="flex-shrink-0 text-3xl font-bold text-blue-400 md:text-4xl">
-                          Krok {idx + 1}.
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {/* 1. Kolumna: Kalorie i Makroskładniki */}
+
+              {/* Karta Kalorii */}
+              <div className="flex flex-col items-center justify-start rounded-xl bg-gradient-to-bl from-red-50 to-teal-50 p-6 ring-1 ring-zinc-200">
+                <h3 className="mb-2 flex items-center gap-2 text-lg font-semibold text-zinc-600">
+                  <Flame size={20} className="text-red-500" />
+                  Wartość energetyczna
+                </h3>
+                <p className="mt-6 text-6xl font-extrabold text-zinc-800">
+                  {calories}
+                </p>
+                <p className="-mt-1 text-lg text-zinc-500">kcal</p>
+              </div>
+
+              {/* Karta Makroskładników */}
+              <div className="rounded-xl bg-zinc-50 p-6 ring-1 ring-zinc-200 lg:col-span-2">
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-600">
+                  <BarChart3 size={20} className="text-zinc-500" />
+                  Makroskładniki
+                </h3>
+                <div className="overflow-x-auto lg:overflow-visible">
+                  <div className="flex w-max snap-x gap-4 px-1 lg:w-full lg:snap-none lg:justify-around">
+                    <MacroDonut
+                      label="Białko"
+                      value={protein}
+                      total={totalMacros}
+                      color="text-blue-300"
+                      unit="g"
+                    />
+                    <MacroDonut
+                      label="Węglowodany"
+                      value={carbs}
+                      total={totalMacros}
+                      color="text-violet-400"
+                      unit="g"
+                    />
+                    <MacroDonut
+                      label="Tłuszcz"
+                      value={fat}
+                      total={totalMacros}
+                      color="text-yellow-400"
+                      unit="g"
+                    />
+                    <MacroDonut
+                      label="Błonnik"
+                      value={fiber}
+                      total={totalMacros}
+                      color="text-green-500"
+                      unit="g"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div className="relative mt-8 w-full">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 pb-16 lg:grid-cols-3">
+          {/* LEWA KOLUMNA: OPIS I KROKI */}
+          <div className="order-2 lg:order-1 lg:col-span-2">
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/50 md:p-8">
+              {description && (
+                <div className="text-zinc-600">
+                  <p>{description}</p>
+                </div>
+              )}
+
+              {/* Kroki przygotowania */}
+              <div className={description ? "mt-16" : ""}>
+                <h2 className="mb-10 flex items-center gap-4 text-3xl font-bold">
+                  <Soup size={32} className="text-teal-500" />
+                  Przygotowanie
+                </h2>
+                <div className="ml-4 space-y-12">
+                  {steps?.map((step: RecipeSteps, idx) => (
+                    <>
+                      <div key={idx} className="relative flex">
+                        {/* Nowy, wizualny licznik kroków */}
+                        <div className="absolute top-1 -left-[16px] flex h-8 w-8 items-center justify-center rounded-full bg-teal-500 font-bold text-white shadow">
+                          {idx + 1}
                         </div>
-                        <div className="flex-grow">
+                        <div className="flex-grow pt-2 pl-10">
                           {step.title && (
-                            <h3 className="text-xl font-semibold text-slate-800">
+                            <h3 className="text-xl font-bold text-zinc-800">
                               {step.title}
                             </h3>
                           )}
-                          <ul className="mt-2 space-y-2 text-slate-600">
+                          <ul className="mt-3 space-y-3 text-zinc-600">
                             {step.description.map((desc: string, i: number) => (
                               <li key={i} className="flex items-start gap-3">
-                                <Plus
-                                  size={16}
-                                  className="mt-1.5 flex-shrink-0 text-blue-500"
+                                <Check
+                                  size={18}
+                                  className="mt-1 flex-shrink-0 text-teal-500"
                                 />
                                 <span>{desc}</span>
                               </li>
                             ))}
                           </ul>
-                          {step.image && (
-                            <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-lg border border-gray-200">
-                              <Image
-                                src={step.image}
-                                alt={step.title || `Krok ${idx + 1}`}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 100vw, 66vw"
-                              />
-                            </div>
-                          )}
                         </div>
                       </div>
-                    ))}
-                  </div>
+                      {step.image && (
+                        <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-xl">
+                          <Image
+                            src={step.image}
+                            alt={step.title || `Krok ${idx + 1}`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 66vw"
+                          />
+                        </div>
+                      )}
+                    </>
+                  ))}
                 </div>
               </div>
             </div>
-
-            {/* PRAWA KOLUMNA: SKŁADNIKI I DANE */}
-            <aside className="-mt-8 lg:col-span-1">
-              <div className="sticky top-4 gap-6">
-                {/* Karta Składników */}
-                {ingredients && ingredients.length > 0 && (
-                  <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-lg">
-                    <h3 className="mb-4 flex items-center gap-3 text-2xl font-bold">
-                      <Leaf size={24} className="text-green-500" />
-                      Składniki
-                    </h3>
-                    <ul>
-                      {ingredients.map((ing: string, i: number) => (
-                        <li
-                          key={i}
-                          className="flex items-center gap-3 rounded-md p-1.5 hover:bg-slate-100"
-                        >
-                          <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                          <span className="text-slate-700">{ing}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Karta Danych */}
-                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-lg">
-                  <h3 className="mb-4 flex items-center gap-3 text-2xl font-bold">
-                    <Info size={24} className="text-blue-500" />
-                    Szczegóły
-                  </h3>
-                  <ul className="space-y-3 text-slate-700">
-                    <li className="flex justify-between">
-                      <span>
-                        <strong>Poziom:</strong>
-                      </span>{" "}
-                      <span>{level}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span>
-                        <strong>Czas:</strong>
-                      </span>{" "}
-                      <span>{time}</span>
-                    </li>
-                  </ul>
-                  <hr className="my-4 border-slate-200" />
-                  <h4 className="mb-2 flex items-center gap-2 text-lg font-semibold">
-                    <BarChart3 size={20} className="text-slate-500" />
-                    Wartości odżywcze
-                  </h4>
-                  <ul className="space-y-2 text-sm text-slate-600">
-                    <li className="flex justify-between">
-                      <span>Kalorie:</span>{" "}
-                      <span className="font-medium">{calories} kcal</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span>Białko:</span>{" "}
-                      <span className="font-medium">{protein} g</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span>Tłuszcze:</span>{" "}
-                      <span className="font-medium">{fat} g</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span>Węglowodany:</span>{" "}
-                      <span className="font-medium">{carbs} g</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </aside>
           </div>
+
+          {/* PRAWA KOLUMNA: SKŁADNIKI I WARTOŚCI ODŻYWCZE */}
+          <aside className="order-1 lg:order-2 lg:col-span-1">
+            <div className="sticky top-12 space-y-8">
+              {/* Karta Składników */}
+              {ingredients && ingredients.length > 0 && (
+                <IngredientsCard ingredients={ingredients} />
+              )}
+            </div>
+          </aside>
         </div>
-      </article>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { RecommendedRecipe } from "@/lib/searchItems";
+import { Flame } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
@@ -58,7 +59,11 @@ export default function RecommendedRecipes({
             key={i}
             className="w-72 shrink-0 snap-none lg:w-auto"
           >
-            <div className="overflow-hidden rounded-lg border border-gray-200">
+            <div className="relative overflow-hidden rounded-lg border border-gray-200">
+              <div className="absolute top-3 -left-6 flex -rotate-45 items-center justify-center gap-1 bg-red-500 px-6 py-1 text-sm font-bold text-white uppercase">
+                <Flame fill="white" size={15} />
+                <span>Hot</span>
+              </div>
               <Image
                 src={recipe.image}
                 alt={recipe.title}

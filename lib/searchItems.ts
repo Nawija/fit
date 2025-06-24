@@ -16,13 +16,14 @@ export type Recipe = {
   slug: string;
   level: string;
   category: string;
-  calories: string;
-  protein: string;
-  fat: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  fiber: number;
+  carbs: number;
   date: string;
   description: string;
   ingredients: string[];
-  carbs: string;
   time: string;
   image: string;
   steps: RecipeSteps[];
@@ -64,6 +65,7 @@ export async function getRecipeBySlugAndCategory(
     calories: data.calories,
     protein: data.protein,
     fat: data.fat,
+    fiber: data.fiber,
     carbs: data.carbs,
     time: data.time,
     steps: data.steps,

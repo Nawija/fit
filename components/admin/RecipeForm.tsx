@@ -55,11 +55,11 @@ export default function RecipeForm({
       slug: "",
       recomended: false,
       category: "",
-      calories: "",
-      protein: "",
-      fat: "",
-      carbs: "",
-      fiber: "",
+      calories: 0,
+      protein: 0,
+      fat: 0,
+      carbs: 0,
+      fiber: 0,
       time: "",
       image: null,
       description: "",
@@ -301,7 +301,7 @@ export default function RecipeForm({
       <form onSubmit={handleSave}>
         {/* === PRZYKLEJONY NAGŁÓWEK === */}
         <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/70 px-4 py-3 backdrop-blur-lg sm:px-6 lg:px-8">
-          <div className="mx-auto flex max-w-7xl px-8 items-center justify-between">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-8">
             <div className="flex items-center justify-center gap-4">
               <Link
                 href="/adm/przepisy"

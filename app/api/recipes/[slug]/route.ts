@@ -7,7 +7,7 @@ import { findRecipePath, saveRecipe } from "../helpers/saveRecipe";
 
 // Funkcja GET pozostaje bez zmian...
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params: { slug } }: { params: { slug: string } },
 ) {
   try {
