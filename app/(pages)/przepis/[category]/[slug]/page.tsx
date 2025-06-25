@@ -117,7 +117,7 @@ export default async function RecipeCategorySlugPage({
   return (
     <div className="anim-opacity bg-gray-50 text-zinc-800">
       {/* Breadcrumbs (nawigacja) */}
-      <div className="flex items-center py-4 text-sm text-zinc-500">
+      <div className="flex items-center p-4 text-sm text-zinc-500 max-w-7xl mx-auto">
         <Link href="/" className="hover:text-zinc-900">
           <Home size={16} />
         </Link>
