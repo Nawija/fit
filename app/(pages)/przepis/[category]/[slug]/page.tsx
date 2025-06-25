@@ -74,7 +74,9 @@ const MacroDonut = ({
           <span className="text-lg font-bold text-zinc-800 lg:text-2xl">
             {value}
           </span>
-          <span className="text-xs lg:text-base text-zinc-500 -mt-1">{unit}</span>
+          <span className="-mt-1 text-xs text-zinc-500 lg:text-base">
+            {unit}
+          </span>
         </div>
       </div>
       <p className="mt-2 text-sm font-medium text-zinc-600">{label}</p>
@@ -114,6 +116,23 @@ export default async function RecipeCategorySlugPage({
 
   return (
     <div className="anim-opacity bg-gray-50 text-zinc-800">
+      {/* Breadcrumbs (nawigacja) */}
+      <div className="flex items-center py-4 text-sm text-zinc-500">
+        <Link href="/" className="hover:text-zinc-900">
+          <Home size={16} />
+        </Link>
+        <ChevronRight size={16} className="mx-1" />
+        <Link href="/przepis" className="hover:text-zinc-900">
+          Przepisy
+        </Link>
+        <ChevronRight size={16} className="mx-1" />
+        <Link
+          href={`/przepisy/${category}`}
+          className="font-semibold text-blue-600"
+        >
+          {formatCategory(category)}
+        </Link>
+      </div>
       <article>
         {/* === SEKCJA HERO W STYLU FACEBOOK === */}
         <div className="w-full bg-white shadow-sm">
@@ -146,23 +165,6 @@ export default async function RecipeCategorySlugPage({
 
               {/* Tytuł i opis */}
               <div className="mt-4 md:ml-6">
-                 {/* Breadcrumbs (nawigacja) */}
-              <div className="flex items-center text-sm text-zinc-500 py-4">
-                <Link href="/" className="hover:text-zinc-900">
-                  <Home size={16} />
-                </Link>
-                <ChevronRight size={16} className="mx-1" />
-                <Link href="/przepis" className="hover:text-zinc-900">
-                  Przepisy
-                </Link>
-                <ChevronRight size={16} className="mx-1" />
-                <Link
-                  href={`/przepisy/${category}`}
-                  className="font-semibold text-blue-600"
-                >
-                  {formatCategory(category)}
-                </Link>
-              </div>
                 <h1 className="text-4xl font-black tracking-tight text-zinc-900 md:text-5xl">
                   {title}
                 </h1>
@@ -174,8 +176,6 @@ export default async function RecipeCategorySlugPage({
 
             {/* 3. Pasek z nawigacją i kluczowymi informacjami */}
             <div className="flex flex-col items-start justify-between border-t border-zinc-200 pt-3 pb-4 md:flex-row md:items-center">
-             
-
               {/* Podstawowe info (Czas, Poziom, Porcje) */}
               <div className="mt-4 flex gap-x-6 text-center text-zinc-700 md:mt-0">
                 <div className="flex flex-col items-center">
