@@ -117,7 +117,7 @@ export default function Nav() {
           </AnimatePresence>
 
           <div
-            className={`mobile-menu bg-brand-main fixed top-0 left-0 z-[50] h-screen w-[280px] transform rounded-r-lg pt-12 text-white shadow-xl transition-transform duration-300 ease-in-out ${
+            className={`mobile-menu shadow-2xl bg-white fixed top-0 left-0 z-[50] h-screen w-[290px] transform pt-12 text-white transition-transform duration-300 ease-in-out ${
               showMenu ? "translate-x-0" : "-translate-x-full"
             }`}
           >
@@ -139,8 +139,8 @@ export default function Nav() {
                         onClick={() => setShowMenu(false)}
                         className={`block py-1 text-lg font-medium uppercase transition-all ${
                           pathname === link.href
-                            ? "font-bold text-white"
-                            : "text-gray-200"
+                            ? "font-bold text-blue-500"
+                            : "text-black/80"
                         }`}
                         aria-current={
                           pathname === link.href ? "page" : undefined
