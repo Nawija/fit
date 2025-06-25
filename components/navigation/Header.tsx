@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Search } from "lucide-react";
+import { Heart, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import Logo from "./Logo";
@@ -73,16 +73,21 @@ export default function Nav() {
           <button
             onClick={() => setShowSearchModal(true)}
             aria-label="Szukaj"
-            className="cursor-pointer"
+            className="cursor-pointer flex items-center justify-center gap-1.5 border p-2 sm:py-1.5 sm:px-3 border-zinc-200 rounded-xl text-white bg-blue-600 text-sm font-bold"
           >
-            <Search />
+            <Search size={18} strokeWidth={3} />
+            <span className="sm:block hidden">Szukaj</span>
           </button>
-
           <Logo />
-          <MenuBurger
-            handleShowMenu={() => setShowMenu(!showMenu)}
-            showMenu={showMenu}
-          />
+          <div className="flex items-center gap-x-3">
+            <button aria-label="Ulubione" className="cursor-pointer">
+              <Heart />
+            </button>
+            <MenuBurger
+              handleShowMenu={() => setShowMenu(!showMenu)}
+              showMenu={showMenu}
+            />
+          </div>
 
           <AnimatePresence>
             {showSearchModal && (

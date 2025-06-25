@@ -113,12 +113,12 @@ export default async function RecipeCategorySlugPage({
   const totalMacros = protein + fat + carbs;
 
   return (
-    <div className="anim-opacity bg-zinc-50 text-zinc-800">
+    <div className="anim-opacity bg-gray-50 text-zinc-800">
       <article>
         {/* === SEKCJA HERO W STYLU FACEBOOK === */}
         <div className="w-full bg-white shadow-sm">
           {/* 1. Zdjęcie w tle (Cover Photo) */}
-          <div className="relative h-[20vh] w-full md:h-[35vh]">
+          <div className="relative h-[16vh] w-full md:h-[35vh]">
             <Image
               src={image}
               alt={`Tło dla ${title}`}
@@ -133,9 +133,9 @@ export default async function RecipeCategorySlugPage({
 
           {/* 2. Kontener na avatar, tytuł i kluczowe informacje */}
           <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-            <div className="flex -translate-y-10 flex-col items-center pb-12 text-center md:flex-row md:items-end md:text-left">
+            <div className="flex flex-col items-center pb-12 text-center md:flex-row md:items-start md:text-left">
               {/* Avatar (zdjęcie dania) */}
-              <div className="relative h-48 w-48 flex-shrink-0 md:h-60 md:w-60">
+              <div className="relative h-48 w-48 -translate-y-10 md:h-60 md:w-60">
                 <Image
                   src={image}
                   alt={title}
@@ -146,6 +146,23 @@ export default async function RecipeCategorySlugPage({
 
               {/* Tytuł i opis */}
               <div className="mt-4 md:ml-6">
+                 {/* Breadcrumbs (nawigacja) */}
+              <div className="flex items-center text-sm text-zinc-500 py-4">
+                <Link href="/" className="hover:text-zinc-900">
+                  <Home size={16} />
+                </Link>
+                <ChevronRight size={16} className="mx-1" />
+                <Link href="/przepis" className="hover:text-zinc-900">
+                  Przepisy
+                </Link>
+                <ChevronRight size={16} className="mx-1" />
+                <Link
+                  href={`/przepisy/${category}`}
+                  className="font-semibold text-blue-600"
+                >
+                  {formatCategory(category)}
+                </Link>
+              </div>
                 <h1 className="text-4xl font-black tracking-tight text-zinc-900 md:text-5xl">
                   {title}
                 </h1>
@@ -157,44 +174,28 @@ export default async function RecipeCategorySlugPage({
 
             {/* 3. Pasek z nawigacją i kluczowymi informacjami */}
             <div className="flex flex-col items-start justify-between border-t border-zinc-200 pt-3 pb-4 md:flex-row md:items-center">
-              {/* Breadcrumbs (nawigacja) */}
-              <div className="flex items-center text-sm text-zinc-500">
-                <Link href="/" className="hover:text-zinc-900">
-                  <Home size={16} />
-                </Link>
-                <ChevronRight size={16} className="mx-1" />
-                <Link href="/przepis" className="hover:text-zinc-900">
-                  Przepisy
-                </Link>
-                <ChevronRight size={16} className="mx-1" />
-                <Link
-                  href={`/przepisy/${category}`}
-                  className="font-semibold text-zinc-900"
-                >
-                  {formatCategory(category)}
-                </Link>
-              </div>
+             
 
               {/* Podstawowe info (Czas, Poziom, Porcje) */}
               <div className="mt-4 flex gap-x-6 text-center text-zinc-700 md:mt-0">
                 <div className="flex flex-col items-center">
                   <Clock
                     size={36}
-                    className="mb-1 rounded-full bg-amber-100 p-2 text-zinc-500"
+                    className="mb-1 rounded-full bg-blue-100 p-2 text-blue-500"
                   />
                   <span className="text-sm font-semibold">{time}</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <ChefHat
                     size={36}
-                    className="mb-1 rounded-full bg-amber-100 p-2 text-zinc-500"
+                    className="mb-1 rounded-full bg-blue-100 p-2 text-blue-500"
                   />
                   <span className="text-sm font-semibold">{level}</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <ChefHat
                     size={36}
-                    className="mb-1 rounded-full bg-amber-100 p-2 text-zinc-500"
+                    className="mb-1 rounded-full bg-blue-100 p-2 text-blue-500"
                   />
                   <span className="text-sm font-semibold">
                     {steps.length} Kroków{" "}

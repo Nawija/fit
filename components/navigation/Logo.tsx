@@ -6,7 +6,7 @@ export default function Logo() {
       href="/"
       className="flex w-full items-center justify-center text-xl font-semibold"
     >
-      LOGO
+      Przepisy
     </Link>
   );
 }
